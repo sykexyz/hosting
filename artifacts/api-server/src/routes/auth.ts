@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
-import { eq, or } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import { store } from "../lib/store";
 import { SignupBody, LoginBody } from "@workspace/api-zod";
 import {
   createUserSession,
@@ -42,11 +41,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const [existing] = await db
-    .select()
-    .from(usersTable)
-    .where(or(eq(usersTable.email, email), eq(usersTable.username, username)));
-
+  const existing = store.users.findByEmailOrUsername(email, username);
   if (existing) {
     res.status(400).json({
       error:
@@ -59,15 +54,19 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const [user] = await db
-    .insert(usersTable)
-    .values({ email, username, passwordHash })
-    .returning();
-
-  if (!user) {
-    res.status(400).json({ error: "Could not create account" });
+  // Re-check uniqueness after the async bcrypt call (guard against concurrent signups).
+  const existingAgain = store.users.findByEmailOrUsername(email, username);
+  if (existingAgain) {
+    res.status(400).json({
+      error:
+        existingAgain.email === email
+          ? "An account with this email already exists"
+          : "This username is already taken",
+    });
     return;
   }
+
+  const user = store.users.insert({ email, username, passwordHash });
 
   const token = createUserSession(user.id);
   setSessionCookie(res, token);
@@ -77,7 +76,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     id: user.id,
     email: user.email,
     username: user.username,
-    createdAt: user.createdAt.toISOString(),
+    createdAt: user.createdAt,
   });
 });
 
@@ -89,11 +88,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   }
 
   const { email, password } = parsed.data;
-
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+  const user = store.users.findByEmail(email);
 
   if (!user) {
     res.status(401).json({ error: "Invalid email or password" });
@@ -114,7 +109,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     id: user.id,
     email: user.email,
     username: user.username,
-    createdAt: user.createdAt.toISOString(),
+    createdAt: user.createdAt,
   });
 });
 
@@ -132,11 +127,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     return;
   }
 
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, session.userId));
-
+  const user = store.users.findById(session.userId);
   if (!user) {
     res.status(401).json({ error: "Not logged in" });
     return;
@@ -146,7 +137,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     id: user.id,
     email: user.email,
     username: user.username,
-    createdAt: user.createdAt.toISOString(),
+    createdAt: user.createdAt,
   });
 });
 

@@ -5,6 +5,7 @@ import {
   getUserSession,
   isAdminSession,
 } from "../lib/sessions";
+import type { Bot } from "../lib/store";
 
 export function requireAuth(
   req: Request,
@@ -39,7 +40,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: number;
-      bot?: import("@workspace/db").Bot;
+      bot?: Bot;
     }
   }
 }

@@ -4,14 +4,13 @@ A bot hosting platform: users sign up, log in, and manage hosted bots from a das
 
 ## Run & Operate
 
-- Workflows are already configured and running: `artifacts/bot-hosting: web` (frontend), `artifacts/api-server: API Server` (backend), `artifacts/mockup-sandbox: Component Preview Server` (canvas previews).
-- `pnpm --filter @workspace/api-server run dev` — run the API server
-- `pnpm --filter @workspace/bot-hosting run dev` — run the frontend
+- Workflows configured and running: `artifacts/bot-hosting: web` (frontend on port 24722), `artifacts/api-server: API Server` (backend on port 8080)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (needs PORT=8080)
+- `pnpm --filter @workspace/bot-hosting run dev` — run the frontend (needs PORT=24722)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string (already provisioned via Replit's built-in Postgres database)
+- No database required — data stored in `artifacts/api-server/data/store.json` (resets on container rebuild)
 
 ## Stack
 
@@ -24,24 +23,36 @@ A bot hosting platform: users sign up, log in, and manage hosted bots from a das
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/src/lib/store.ts` — JSON file data store (source of truth for all persistence)
+- `artifacts/api-server/src/routes/` — Express route handlers (auth, bots, admin)
+- `artifacts/api-server/data/store.json` — live data file (auto-created; resets on container rebuild)
+- `artifacts/bot-hosting/src/index.css` — all theme variables and utility classes
+- `artifacts/bot-hosting/src/pages/Dashboard.tsx` — main user dashboard with upload animation
+- `lib/api-zod/` — Zod schemas for API validation
+- `lib/api-client-react/` — Orval-generated React Query hooks
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **JSON file storage instead of PostgreSQL**: user requested no database dependency. Data stored in `artifacts/api-server/data/store.json` with atomic writes (temp + rename). Resets on container rebuild — that's intentional.
+- **Always-dark theme**: site is permanently in dark/black-galaxy mode. The `dark` class is force-applied in `main.tsx`; ThemeToggle is hidden via CSS.
+- **Upload terminal animation**: file upload shows a fake module-download animation (per language) while the real upload runs in parallel. Success/error shown when both the animation and upload resolve.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Bot hosting platform: users sign up (Gmail only), log in, deploy bots by uploading source files, and start/stop them from the dashboard. Admins (credentials: risu / cozy24123) have a separate login with a global view of all users, bots, and activity logs.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Black and white neon theme, black galaxy background with stars
+- No database required — JSON file storage is fine (data can reset)
+- File upload must show module-download loading animation, then "Successfully hosted: filename"
+- Site always dark, no theme toggle
 
 ## Gotchas
 
-- The dev/start commands above are wired into the pre-configured Replit workflows (which supply `PORT`/`BASE_PATH` automatically). Running them directly in a shell requires setting those env vars yourself.
-- `pnpm run typecheck` currently fails in `artifacts/bot-hosting` (5 pre-existing `TS2339` errors on `.error` in Login/Signup/Dashboard/AdminLogin/AdminDashboard, from the imported Orval-generated API error type). Pre-existing from import, not introduced by setup.
+- The dev/start commands above are wired into Replit workflows (which supply `PORT`/`BASE_PATH`). Running directly in a shell requires setting those env vars yourself.
+- JSON store is process-local and file-based. Concurrent multi-process deployments would need proper locking or a database upgrade.
+- `pnpm run typecheck` has 5 pre-existing `TS2339` errors in `artifacts/bot-hosting` on `.error` in Orval-generated API hooks — not introduced by these changes.
 
 ## Pointers
 

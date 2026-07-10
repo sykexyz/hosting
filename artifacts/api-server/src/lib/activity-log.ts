@@ -1,5 +1,5 @@
-import { db, logsTable } from "@workspace/db";
+import { store } from "./store";
 
 export async function logActivity(message: string): Promise<void> {
-  await db.insert(logsTable).values({ message });
+  store.logs.insert(message);
 }
