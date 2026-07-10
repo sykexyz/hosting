@@ -47,7 +47,7 @@ export default function Signup() {
         setLocation("/dashboard");
       },
       onError: (err) => {
-        toast({ title: "Error", description: err.error || "Failed to create account", variant: "destructive" });
+        toast({ title: "Error", description: err.data?.error || "Failed to create account", variant: "destructive" });
       }
     });
   };

@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "start": "echo '@workspace/api-zod is a shared library, not a runnable service.' && exit 0"
+  },
   "exports": {
     ".": "./src/index.ts"
   },

@@ -24,7 +24,7 @@ export default function AdminLogin() {
         setLocation("/admin");
       },
       onError: (err) => {
-        toast({ title: "Login failed", description: err.error || "Invalid credentials", variant: "destructive" });
+        toast({ title: "Login failed", description: err.data?.error || "Invalid credentials", variant: "destructive" });
       }
     });
   };

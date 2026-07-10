@@ -25,7 +25,7 @@ export default function Login() {
         setLocation("/dashboard");
       },
       onError: (err) => {
-        toast({ title: "Login failed", description: err.error || "Invalid credentials", variant: "destructive" });
+        toast({ title: "Login failed", description: err.data?.error || "Invalid credentials", variant: "destructive" });
       }
     });
   };

@@ -50,7 +50,7 @@ export default function AdminDashboard() {
         queryClient.invalidateQueries({ queryKey: getListAdminLogsQueryKey() });
       },
       onError: (err) => {
-        toast({ title: "Error", description: err.error || "Failed to delete slot", variant: "destructive" });
+        toast({ title: "Error", description: err.data?.error || "Failed to delete slot", variant: "destructive" });
       }
     });
   };

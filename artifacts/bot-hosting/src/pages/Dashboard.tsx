@@ -140,7 +140,7 @@ export default function Dashboard() {
         queryClient.invalidateQueries({ queryKey: getGetBotSummaryQueryKey() });
       },
       onError: (err: any) => {
-        toast({ title: "Operation failed", description: err.error || "An error occurred", variant: "destructive" });
+        toast({ title: "Operation failed", description: err.data?.error || "An error occurred", variant: "destructive" });
       }
     };
 
@@ -199,7 +199,7 @@ export default function Dashboard() {
         }
       },
       onError: (err) => {
-        toast({ title: "Provisioning failed", description: err.error || "Failed to create slot", variant: "destructive" });
+        toast({ title: "Provisioning failed", description: err.data?.error || "Failed to create slot", variant: "destructive" });
       }
     });
   };
