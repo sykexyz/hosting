@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
+import { Logo } from "../components/Logo";
 import { 
   useGetCurrentUser, 
   useListBots, 
@@ -204,9 +205,7 @@ export default function Dashboard() {
     <div className="min-h-[100dvh] flex flex-col relative">
       <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b border-white/5 bg-background/50 backdrop-blur-lg sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] border border-blue-400 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-white shadow-[0_0_10px_white]"></div>
-          </div>
+          <Logo className="w-9 h-9 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" />
           <span className="text-xl font-bold text-white tracking-tight hidden md:inline-block">Client Portal</span>
         </div>
         <div className="flex items-center gap-6">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Logo } from "../components/Logo";
 import { Link, useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,7 @@ export default function Login() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
       
       <Link href="/" className="flex items-center gap-3 mb-8 hover:scale-105 transition-transform">
-        <div className="w-10 h-10 rounded-lg bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)] border border-blue-400 flex items-center justify-center">
-          <div className="w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_10px_white]"></div>
-        </div>
+        <Logo className="w-12 h-12 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
       </Link>
 
       <Card className="w-full max-w-md">

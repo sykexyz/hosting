@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAdminLogin } from "@workspace/api-client-react";
+import { Logo } from "../components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,9 +35,7 @@ export default function AdminLogin() {
 
       <Card className="w-full max-w-sm border-white/5 bg-neutral-900/80 backdrop-blur-xl shadow-2xl">
         <CardHeader className="text-center pb-6">
-          <div className="mx-auto w-12 h-12 mb-4 border border-white/10 rounded-lg flex items-center justify-center bg-black">
-            <div className="w-4 h-4 bg-red-500 rounded-sm shadow-[0_0_15px_rgba(239,68,68,0.8)]"></div>
-          </div>
+          <Logo className="mx-auto w-12 h-12 mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] grayscale-[0.5] hue-rotate-[150deg]" />
           <CardTitle className="text-xl tracking-widest text-white/80 uppercase font-mono">System Admin</CardTitle>
         </CardHeader>
         <CardContent>

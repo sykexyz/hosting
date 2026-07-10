@@ -1,3 +1,4 @@
+import { Logo } from "../components/Logo";
 import { Link } from "wouter";
 import { SiDiscord, SiTelegram } from "react-icons/si";
 
@@ -6,9 +7,7 @@ export default function Landing() {
     <div className="flex flex-col min-h-[100dvh]">
       <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b border-white/5 bg-background/50 backdrop-blur-lg sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] border border-blue-400 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-white shadow-[0_0_10px_white]"></div>
-          </div>
+          <Logo className="w-9 h-9 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" />
           <span className="text-xl font-bold text-white tracking-tight">1999 Bot Hosting</span>
         </div>
         <nav className="flex items-center gap-4">
@@ -86,9 +85,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-6 h-6 rounded-md bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)] border border-blue-400 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-white"></div>
-              </div>
+              <Logo className="w-7 h-7 drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]" />
               <span className="text-lg font-bold text-white tracking-tight">1999 Bot Hosting</span>
             </div>
             <p className="text-sm text-blue-200/50 max-w-sm">

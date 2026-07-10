@@ -44,36 +44,36 @@
 }
 
 :root {
-  /* Deep Blue 3D Glossy Theme */
-  --background: 228 50% 6%;
+  /* Rich Deep Blue Glossy Metal Theme */
+  --background: 225 60% 4%;
   --foreground: 210 40% 98%;
 
-  --card: 228 45% 9%;
+  --card: 222 47% 8%;
   --card-foreground: 210 40% 98%;
-  --card-border: 228 30% 20%;
+  --card-border: 217 50% 18%;
 
-  --popover: 228 45% 9%;
+  --popover: 222 47% 8%;
   --popover-foreground: 210 40% 98%;
-  --popover-border: 228 30% 20%;
+  --popover-border: 217 50% 18%;
 
-  --primary: 217 91% 60%;
+  --primary: 221 83% 53%;
   --primary-foreground: 210 40% 98%;
 
-  --secondary: 228 40% 16%;
+  --secondary: 222 47% 12%;
   --secondary-foreground: 210 40% 98%;
 
-  --muted: 228 30% 15%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 222 47% 12%;
+  --muted-foreground: 215 30% 65%;
 
-  --accent: 217 91% 60%;
+  --accent: 221 83% 53%;
   --accent-foreground: 210 40% 98%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 228 30% 20%;
-  --input: 228 35% 15%;
-  --ring: 217 91% 60%;
+  --border: 217 50% 18%;
+  --input: 222 47% 12%;
+  --ring: 221 83% 53%;
 
   --radius: 0.75rem;
 }
@@ -84,52 +84,100 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-color: hsl(var(--background));
     background-image: 
-      radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.12), transparent 40%),
-      radial-gradient(circle at 85% 30%, rgba(37, 99, 235, 0.15), transparent 40%);
+      radial-gradient(circle at 15% 0%, rgba(30, 58, 138, 0.4), transparent 50%),
+      radial-gradient(circle at 85% 100%, rgba(23, 37, 84, 0.6), transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8), transparent 100%);
     background-attachment: fixed;
     min-height: 100vh;
+  }
+  
+  body::after {
+    content: '';
+    @apply fixed inset-0 pointer-events-none opacity-[0.03];
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    z-index: 9999;
   }
 }
 
 /* Glassy / 3D Classes */
 @layer utilities {
   .glass-panel {
-    @apply bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] relative overflow-hidden;
+    @apply bg-[#0c1222]/80 backdrop-blur-2xl relative overflow-hidden;
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 8px 32px -8px rgba(0, 0, 0, 0.8),
+      0 4px 16px 0 rgba(0, 0, 0, 0.6);
   }
   .glass-panel::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50 pointer-events-none;
+    @apply absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/40 pointer-events-none opacity-60;
   }
   
   .btn-3d {
-    @apply relative transition-all duration-150 transform active:translate-y-[2px] active:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_0_rgba(0,0,0,0.5)] overflow-hidden;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 4px 0 rgba(0,0,0,0.6), 0 6px 12px rgba(0,0,0,0.4);
+    @apply relative transition-all duration-150 transform active:translate-y-[2px] overflow-hidden rounded-lg;
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.15), 
+      inset 0 -1px 1px rgba(0, 0, 0, 0.4),
+      0 4px 0 rgba(0, 0, 0, 0.8), 
+      0 6px 12px rgba(0, 0, 0, 0.6);
+  }
+  .btn-3d:active {
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.4), 
+      0 2px 0 rgba(0, 0, 0, 0.8), 
+      0 3px 6px rgba(0, 0, 0, 0.6);
   }
   .btn-3d:hover::after {
     content: '';
-    @apply absolute inset-0 bg-white/10 pointer-events-none;
+    @apply absolute inset-0 bg-white/10 pointer-events-none transition-opacity;
   }
 
   .btn-3d-primary {
-    @apply bg-gradient-to-b from-blue-500 to-blue-700 text-white font-semibold border-blue-400/50;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 0 rgba(30,58,138,0.8), 0 6px 12px rgba(0,0,0,0.5);
+    @apply bg-gradient-to-b from-[#1e40af] to-[#172554] text-white font-medium border border-[#3b82f6]/30;
+    box-shadow: 
+      inset 0 1px 1px rgba(255,255,255,0.25), 
+      inset 0 -1px 1px rgba(0,0,0,0.5),
+      0 4px 0 rgba(15,23,42,0.9), 
+      0 6px 12px rgba(0,0,0,0.6);
   }
   .btn-3d-primary:active {
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 0 rgba(30,58,138,0.8), 0 3px 6px rgba(0,0,0,0.4);
+    box-shadow: 
+      inset 0 2px 4px rgba(0,0,0,0.5), 
+      0 2px 0 rgba(15,23,42,0.9), 
+      0 3px 6px rgba(0,0,0,0.6);
     @apply translate-y-[2px];
   }
 
   .btn-3d-destructive {
-    @apply bg-gradient-to-b from-red-500 to-red-700 text-white font-semibold border-red-400/50;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 0 rgba(153,27,27,0.8), 0 6px 12px rgba(0,0,0,0.5);
+    @apply bg-gradient-to-b from-red-600 to-red-900 text-white font-medium border border-red-500/30;
+    box-shadow: 
+      inset 0 1px 1px rgba(255,255,255,0.25), 
+      inset 0 -1px 1px rgba(0,0,0,0.5),
+      0 4px 0 rgba(69,10,10,0.9), 
+      0 6px 12px rgba(0,0,0,0.6);
   }
   .btn-3d-destructive:active {
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 0 rgba(153,27,27,0.8), 0 3px 6px rgba(0,0,0,0.4);
+    box-shadow: 
+      inset 0 2px 4px rgba(0,0,0,0.5), 
+      0 2px 0 rgba(69,10,10,0.9), 
+      0 3px 6px rgba(0,0,0,0.6);
     @apply translate-y-[2px];
   }
 
   .input-3d {
-    @apply bg-[#0a0f1e] border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] focus:border-blue-500 focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.6),0_0_8px_rgba(59,130,246,0.5)] transition-all outline-none rounded-lg text-white placeholder:text-white/30;
+    @apply bg-[#080c17] border border-[#1e293b] text-white placeholder:text-white/30 rounded-lg transition-all outline-none;
+    box-shadow: 
+      inset 0 2px 6px rgba(0,0,0,0.8),
+      0 1px 0 rgba(255,255,255,0.05);
+  }
+  .input-3d:focus {
+    @apply border-[#3b82f6]/60;
+    box-shadow: 
+      inset 0 2px 6px rgba(0,0,0,0.8),
+      0 0 12px rgba(37,99,235,0.3),
+      0 1px 0 rgba(255,255,255,0.05);
   }
 }
