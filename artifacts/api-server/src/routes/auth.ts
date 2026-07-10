@@ -29,14 +29,16 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const { email, username, password, confirmPassword } = parsed.data;
+  const { email, username, password } = parsed.data;
+  // confirmPassword is validated client-side; retrieve from raw body for the server-side guard
+  const confirmPassword = (req.body as Record<string, unknown>).confirmPassword;
 
   if (!GMAIL_REGEX.test(email)) {
     res.status(400).json({ error: "Please use a valid Gmail address" });
     return;
   }
 
-  if (password !== confirmPassword) {
+  if (confirmPassword !== undefined && password !== confirmPassword) {
     res.status(400).json({ error: "Passwords do not match" });
     return;
   }

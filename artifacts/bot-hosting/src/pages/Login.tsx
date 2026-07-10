@@ -80,6 +80,12 @@ export default function Login() {
               Sign up
             </Link>
           </div>
+
+          <div className="mt-3 text-center">
+            <Link href="/admin-login" className="text-xs text-white/20 hover:text-white/50 transition-colors">
+              Admin access
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -6,6 +6,13 @@
       "passwordHash": "$2b$10$Cg7lTR.794Fq7bHjsTq0L.biO62K7XMs277v9w2kEZ67ZuT9Z9ewu",
       "id": 1,
       "createdAt": "2026-07-10T05:12:03.883Z"
+    },
+    {
+      "email": "risu3070@gmail.com",
+      "username": "risu",
+      "passwordHash": "$2b$10$jIjPTE4jA9GIGbiiEV9la.QFJxUbHnakfnCQ3BWe4glDFlEDRrPOu",
+      "id": 2,
+      "createdAt": "2026-07-10T05:20:06.827Z"
     }
   ],
   "bots": [],
@@ -19,11 +26,26 @@
       "id": 2,
       "message": "Admin logged in",
       "createdAt": "2026-07-10T05:12:03.898Z"
+    },
+    {
+      "id": 3,
+      "message": "New user signed up: risu",
+      "createdAt": "2026-07-10T05:20:06.827Z"
+    },
+    {
+      "id": 4,
+      "message": "risu logged in",
+      "createdAt": "2026-07-10T05:20:06.906Z"
+    },
+    {
+      "id": 5,
+      "message": "Admin logged in",
+      "createdAt": "2026-07-10T05:20:06.914Z"
     }
   ],
   "_seq": {
-    "users": 1,
+    "users": 2,
     "bots": 0,
-    "logs": 2
+    "logs": 5
   }
 }
