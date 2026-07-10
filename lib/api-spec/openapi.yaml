@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: User authentication
+  - name: bots
+    description: Bot hosting management
+  - name: admin
+    description: Admin panel operations
 paths:
   /healthz:
     get:
@@ -24,7 +30,365 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out
+      responses:
+        "204":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current logged-in user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bots:
+    get:
+      operationId: listBots
+      tags: [bots]
+      summary: List my hosted bots
+      responses:
+        "200":
+          description: My bots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bot"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createBot
+      tags: [bots]
+      summary: Register a new bot slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotInput"
+      responses:
+        "201":
+          description: Bot created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bot"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bots/summary:
+    get:
+      operationId: getBotSummary
+      tags: [bots]
+      summary: Aggregate stats for the current user's bots
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSummary"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bots/{id}:
+    get:
+      operationId: getBot
+      tags: [bots]
+      summary: Get a bot
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Bot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bot"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteBot
+      tags: [bots]
+      summary: Delete a bot
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bots/{id}/start:
+    post:
+      operationId: startBot
+      tags: [bots]
+      summary: Start a bot
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Bot started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bot"
+        "400":
+          description: Cannot start
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bots/{id}/stop:
+    post:
+      operationId: stopBot
+      tags: [bots]
+      summary: Stop a bot
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Bot stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bot"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin panel login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Logged in as admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Invalid admin credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Admin panel logout
+      responses:
+        "204":
+          description: Logged out
+
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List all registered users
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/bots:
+    get:
+      operationId: listAdminBots
+      tags: [admin]
+      summary: List every hosted bot across all users
+      responses:
+        "200":
+          description: Bots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminBot"
+        "401":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/bots/{id}:
+    delete:
+      operationId: deleteAdminBot
+      tags: [admin]
+      summary: Remove any hosted bot
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/bots/{id}/download:
+    get:
+      operationId: downloadAdminBotFile
+      tags: [admin]
+      summary: Download a hosted bot's source file (opened directly, not via hook)
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: File contents
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/logs:
+    get:
+      operationId: listAdminLogs
+      tags: [admin]
+      summary: Recent activity log across the platform
+      responses:
+        "200":
+          description: Logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogEntry"
+        "401":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  parameters:
+    BotId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +398,192 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    SignupInput:
+      type: object
+      required: [email, username, password, confirmPassword]
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 6
+        confirmPassword:
+          type: string
+          minLength: 6
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    User:
+      type: object
+      required: [id, email, username, createdAt]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        username:
+          type: string
+        createdAt:
+          type: string
+
+    AdminLoginInput:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+        password:
+          type: string
+
+    AdminSession:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    BotInput:
+      type: object
+      required: [name, language, ramMb, storageMb]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        language:
+          type: string
+          enum: [python, javascript, typescript, java, other]
+        ramMb:
+          type: integer
+          enum: [256, 512, 1024, 2048, 4096]
+        storageMb:
+          type: integer
+          enum: [256, 512, 1024, 2048, 5120]
+
+    Bot:
+      type: object
+      required:
+        [
+          id,
+          name,
+          language,
+          ramMb,
+          storageMb,
+          status,
+          fileName,
+          createdAt,
+        ]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        language:
+          type: string
+        ramMb:
+          type: integer
+        storageMb:
+          type: integer
+        status:
+          type: string
+          enum: [stopped, running]
+        fileName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    BotSummary:
+      type: object
+      required:
+        [totalBots, runningBots, totalRamMb, totalStorageMb]
+      properties:
+        totalBots:
+          type: integer
+        runningBots:
+          type: integer
+        totalRamMb:
+          type: integer
+        totalStorageMb:
+          type: integer
+
+    AdminUser:
+      type: object
+      required: [id, email, username, createdAt, botCount]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        username:
+          type: string
+        createdAt:
+          type: string
+        botCount:
+          type: integer
+
+    AdminBot:
+      type: object
+      required:
+        [
+          id,
+          name,
+          language,
+          ramMb,
+          storageMb,
+          status,
+          fileName,
+          createdAt,
+          ownerEmail,
+          ownerUsername,
+          hasFile,
+        ]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        language:
+          type: string
+        ramMb:
+          type: integer
+        storageMb:
+          type: integer
+        status:
+          type: string
+        fileName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        ownerEmail:
+          type: string
+        ownerUsername:
+          type: string
+        hasFile:
+          type: boolean
+
+    LogEntry:
+      type: object
+      required: [id, message, createdAt]
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        createdAt:
+          type: string

@@ -1,0 +1,135 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'Spline Sans Mono', monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  /* Deep Blue 3D Glossy Theme */
+  --background: 228 50% 6%;
+  --foreground: 210 40% 98%;
+
+  --card: 228 45% 9%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 228 30% 20%;
+
+  --popover: 228 45% 9%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 228 30% 20%;
+
+  --primary: 217 91% 60%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 228 40% 16%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 228 30% 15%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 217 91% 60%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 228 30% 20%;
+  --input: 228 35% 15%;
+  --ring: 217 91% 60%;
+
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.12), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(37, 99, 235, 0.15), transparent 40%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+/* Glassy / 3D Classes */
+@layer utilities {
+  .glass-panel {
+    @apply bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] relative overflow-hidden;
+  }
+  .glass-panel::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-50 pointer-events-none;
+  }
+  
+  .btn-3d {
+    @apply relative transition-all duration-150 transform active:translate-y-[2px] active:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_0_rgba(0,0,0,0.5)] overflow-hidden;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 4px 0 rgba(0,0,0,0.6), 0 6px 12px rgba(0,0,0,0.4);
+  }
+  .btn-3d:hover::after {
+    content: '';
+    @apply absolute inset-0 bg-white/10 pointer-events-none;
+  }
+
+  .btn-3d-primary {
+    @apply bg-gradient-to-b from-blue-500 to-blue-700 text-white font-semibold border-blue-400/50;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 0 rgba(30,58,138,0.8), 0 6px 12px rgba(0,0,0,0.5);
+  }
+  .btn-3d-primary:active {
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 0 rgba(30,58,138,0.8), 0 3px 6px rgba(0,0,0,0.4);
+    @apply translate-y-[2px];
+  }
+
+  .btn-3d-destructive {
+    @apply bg-gradient-to-b from-red-500 to-red-700 text-white font-semibold border-red-400/50;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 0 rgba(153,27,27,0.8), 0 6px 12px rgba(0,0,0,0.5);
+  }
+  .btn-3d-destructive:active {
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 0 rgba(153,27,27,0.8), 0 3px 6px rgba(0,0,0,0.4);
+    @apply translate-y-[2px];
+  }
+
+  .input-3d {
+    @apply bg-[#0a0f1e] border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] focus:border-blue-500 focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.6),0_0_8px_rgba(59,130,246,0.5)] transition-all outline-none rounded-lg text-white placeholder:text-white/30;
+  }
+}
