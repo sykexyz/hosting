@@ -35,7 +35,6 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   }
 
   const { email, username, password } = parsed.data;
-  // confirmPassword is validated client-side; retrieve from raw body for the server-side guard
   const confirmPassword = (req.body as Record<string, unknown>).confirmPassword;
 
   if (!GMAIL_REGEX.test(email)) {
@@ -48,7 +47,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const existing = store.users.findByEmailOrUsername(email, username);
+  const existing = await store.users.findByEmailOrUsername(email, username);
   if (existing) {
     res.status(400).json({
       error:
@@ -62,7 +61,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   const passwordHash = await bcrypt.hash(password, 10);
 
   // Re-check uniqueness after the async bcrypt call (guard against concurrent signups).
-  const existingAgain = store.users.findByEmailOrUsername(email, username);
+  const existingAgain = await store.users.findByEmailOrUsername(email, username);
   if (existingAgain) {
     res.status(400).json({
       error:
@@ -73,9 +72,25 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const user = store.users.insert({ email, username, passwordHash });
+  let user;
+  try {
+    user = await store.users.insert({ email, username, passwordHash });
+  } catch (err: unknown) {
+    // PostgreSQL unique_violation (23505) — two concurrent signups raced past our checks
+    const pg = err as { code?: string; constraint?: string };
+    if (pg.code === "23505") {
+      const field = pg.constraint?.includes("username") ? "username" : "email";
+      res.status(400).json({
+        error: field === "username"
+          ? "This username is already taken"
+          : "An account with this email already exists",
+      });
+      return;
+    }
+    throw err;
+  }
 
-  const token = createUserSession(user.id);
+  const token = await createUserSession(user.id);
   setSessionCookie(res, token);
   await logActivity(`New user signed up: ${user.username}`);
 
@@ -95,7 +110,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   }
 
   const { email, password } = parsed.data;
-  const user = store.users.findByEmail(email);
+  const user = await store.users.findByEmail(email);
 
   if (!user) {
     res.status(401).json({ error: "Invalid email or password" });
@@ -108,7 +123,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const token = createUserSession(user.id);
+  const token = await createUserSession(user.id);
   setSessionCookie(res, token);
   await logActivity(`${user.username} logged in`);
 
@@ -120,21 +135,21 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   });
 });
 
-router.post("/auth/logout", (req, res): void => {
-  destroyUserSession(req.cookies?.[USER_COOKIE] as string | undefined);
+router.post("/auth/logout", async (req, res): Promise<void> => {
+  await destroyUserSession(req.cookies?.[USER_COOKIE] as string | undefined);
   res.clearCookie(USER_COOKIE);
   res.sendStatus(204);
 });
 
 router.get("/auth/me", async (req, res): Promise<void> => {
   const token = req.cookies?.[USER_COOKIE] as string | undefined;
-  const session = getUserSession(token);
+  const session = await getUserSession(token);
   if (!session) {
     res.status(401).json({ error: "Not logged in" });
     return;
   }
 
-  const user = store.users.findById(session.userId);
+  const user = await store.users.findById(session.userId);
   if (!user) {
     res.status(401).json({ error: "Not logged in" });
     return;

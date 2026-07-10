@@ -1,0 +1,1 @@
+- [Railway deployment fix](railway-deployment.md) — migrated from ephemeral JSON store to PostgreSQL; startup migration ensures tables exist; Railway needs DATABASE_URL, FRONTEND_URL, VITE_API_URL.

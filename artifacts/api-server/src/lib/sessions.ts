@@ -1,28 +1,51 @@
 import crypto from "node:crypto";
-
-// Simple in-memory session stores. This is a single-process dev/staging
-// server so an in-memory map is sufficient — sessions reset on restart.
-const userSessions = new Map<string, { userId: number }>();
-const adminSessions = new Set<string>();
+import { db, sessionsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 export const USER_COOKIE = "bh_session";
 export const ADMIN_COOKIE = "bh_admin_session";
 
-export function createUserSession(userId: number): string {
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// ---------------------------------------------------------------------------
+// User sessions — persisted in PostgreSQL so they survive restarts/redeploys
+// ---------------------------------------------------------------------------
+
+export async function createUserSession(userId: number): Promise<string> {
   const token = crypto.randomBytes(32).toString("hex");
-  userSessions.set(token, { userId });
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  await db.insert(sessionsTable).values({ token, userId, expiresAt });
   return token;
 }
 
-export function getUserSession(token: string | undefined) {
+export async function getUserSession(
+  token: string | undefined
+): Promise<{ userId: number } | undefined> {
   if (!token) return undefined;
-  return userSessions.get(token);
+  const rows = await db
+    .select()
+    .from(sessionsTable)
+    .where(eq(sessionsTable.token, token))
+    .limit(1);
+  const session = rows[0];
+  if (!session) return undefined;
+  // Treat expired sessions as missing
+  if (session.expiresAt < new Date()) {
+    await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
+    return undefined;
+  }
+  return { userId: session.userId };
 }
 
-export function destroyUserSession(token: string | undefined) {
+export async function destroyUserSession(token: string | undefined): Promise<void> {
   if (!token) return;
-  userSessions.delete(token);
+  await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
 }
+
+// ---------------------------------------------------------------------------
+// Admin sessions — single-process in-memory (one admin, not critical to persist)
+// ---------------------------------------------------------------------------
+const adminSessions = new Set<string>();
 
 export function createAdminSession(): string {
   const token = crypto.randomBytes(32).toString("hex");
@@ -35,7 +58,7 @@ export function isAdminSession(token: string | undefined): boolean {
   return adminSessions.has(token);
 }
 
-export function destroyAdminSession(token: string | undefined) {
+export function destroyAdminSession(token: string | undefined): void {
   if (!token) return;
   adminSessions.delete(token);
 }

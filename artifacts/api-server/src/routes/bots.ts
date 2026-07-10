@@ -21,13 +21,13 @@ function serializeBot(bot: Bot) {
   };
 }
 
-router.get("/bots", requireAuth, (req, res): void => {
-  const bots = store.bots.findByUserId(req.userId!);
+router.get("/bots", requireAuth, async (req, res): Promise<void> => {
+  const bots = await store.bots.findByUserId(req.userId!);
   res.json(bots.map(serializeBot));
 });
 
-router.get("/bots/summary", requireAuth, (req, res): void => {
-  const bots = store.bots.findByUserId(req.userId!);
+router.get("/bots/summary", requireAuth, async (req, res): Promise<void> => {
+  const bots = await store.bots.findByUserId(req.userId!);
   const totalBots = bots.length;
   const runningBots = bots.filter((b) => b.status === "running").length;
   const totalRamMb = bots.reduce((sum, b) => sum + b.ramMb, 0);
@@ -35,14 +35,14 @@ router.get("/bots/summary", requireAuth, (req, res): void => {
   res.json({ totalBots, runningBots, totalRamMb, totalStorageMb });
 });
 
-router.post("/bots", requireAuth, (req, res): void => {
+router.post("/bots", requireAuth, async (req, res): Promise<void> => {
   const parsed = CreateBotBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
-  const bot = store.bots.insert({
+  const bot = await store.bots.insert({
     userId: req.userId!,
     name: parsed.data.name,
     language: parsed.data.language,
@@ -57,9 +57,9 @@ router.post("/bots", requireAuth, (req, res): void => {
   res.status(201).json(serializeBot(bot));
 });
 
-router.get("/bots/:id", requireAuth, (req, res): void => {
+router.get("/bots/:id", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.findByIdAndUserId(id, req.userId!);
+  const bot = await store.bots.findByIdAndUserId(id, req.userId!);
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
     return;
@@ -67,9 +67,9 @@ router.get("/bots/:id", requireAuth, (req, res): void => {
   res.json(serializeBot(bot));
 });
 
-router.delete("/bots/:id", requireAuth, (req, res): void => {
+router.delete("/bots/:id", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.deleteByIdAndUserId(id, req.userId!);
+  const bot = await store.bots.deleteByIdAndUserId(id, req.userId!);
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
     return;
@@ -84,13 +84,13 @@ router.delete("/bots/:id", requireAuth, (req, res): void => {
 });
 
 // Validate that the bot exists and belongs to the requester BEFORE multer writes anything to disk.
-function requireOwnedBot(
+async function requireOwnedBot(
   req: import("express").Request,
   res: import("express").Response,
   next: import("express").NextFunction,
-): void {
+): Promise<void> {
   const id = Number(req.params.id);
-  const bot = store.bots.findByIdAndUserId(id, req.userId!);
+  const bot = await store.bots.findByIdAndUserId(id, req.userId!);
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
     return;
@@ -104,7 +104,7 @@ router.post(
   requireAuth,
   requireOwnedBot,
   upload.single("file"),
-  (req, res): void => {
+  async (req, res): Promise<void> => {
     const bot = req.bot!;
 
     if (!req.file) {
@@ -116,7 +116,7 @@ router.post(
       fs.unlinkSync(bot.filePath);
     }
 
-    const updated = store.bots.update(bot.id, {
+    const updated = await store.bots.update(bot.id, {
       fileName: req.file.originalname,
       filePath: req.file.path,
     });
@@ -131,9 +131,9 @@ router.post(
   },
 );
 
-router.post("/bots/:id/start", requireAuth, (req, res): void => {
+router.post("/bots/:id/start", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.findByIdAndUserId(id, req.userId!);
+  const bot = await store.bots.findByIdAndUserId(id, req.userId!);
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
     return;
@@ -144,20 +144,20 @@ router.post("/bots/:id/start", requireAuth, (req, res): void => {
     return;
   }
 
-  const updated = store.bots.update(id, { status: "running" });
+  const updated = await store.bots.update(id, { status: "running" });
   logActivity(`Bot "${bot.name}" started`).catch(() => {});
   res.json(serializeBot(updated ?? bot));
 });
 
-router.post("/bots/:id/stop", requireAuth, (req, res): void => {
+router.post("/bots/:id/stop", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.findByIdAndUserId(id, req.userId!);
+  const bot = await store.bots.findByIdAndUserId(id, req.userId!);
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
     return;
   }
 
-  const updated = store.bots.update(id, { status: "stopped" });
+  const updated = await store.bots.update(id, { status: "stopped" });
   logActivity(`Bot "${bot.name}" stopped`).catch(() => {});
   res.json(serializeBot(updated ?? bot));
 });

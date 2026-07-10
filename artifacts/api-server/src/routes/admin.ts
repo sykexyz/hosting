@@ -13,8 +13,10 @@ import { logActivity } from "../lib/activity-log";
 
 const router: IRouter = Router();
 
-const ADMIN_IDENTIFIER = "risu3070@gmail.com";
-const ADMIN_PASSWORD = "cozy24123";
+// Load admin credentials from environment — set ADMIN_EMAIL and ADMIN_PASSWORD
+// on Railway (and in .env locally) before deploying.
+const ADMIN_IDENTIFIER = process.env.ADMIN_EMAIL ?? "risu3070@gmail.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "cozy24123";
 
 router.post("/admin/login", async (req, res): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
@@ -48,26 +50,28 @@ router.post("/admin/logout", (req, res): void => {
   res.sendStatus(204);
 });
 
-router.get("/admin/users", requireAdmin, (_req, res): void => {
-  const users = store.users.findAll();
-  const bots = store.bots.findAll();
+router.get("/admin/users", requireAdmin, async (_req, res): Promise<void> => {
+  const [users, bots] = await Promise.all([
+    store.users.findAll(),
+    store.bots.findAll(),
+  ]);
 
-  const result = users
-    .sort((a, b) => b.id - a.id)
-    .map((u) => ({
-      id: u.id,
-      email: u.email,
-      username: u.username,
-      createdAt: u.createdAt,
-      botCount: bots.filter((b) => b.userId === u.id).length,
-    }));
+  const result = users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    username: u.username,
+    createdAt: u.createdAt,
+    botCount: bots.filter((b) => b.userId === u.id).length,
+  }));
 
   res.json(result);
 });
 
-router.get("/admin/bots", requireAdmin, (_req, res): void => {
-  const bots = store.bots.findAll();
-  const users = store.users.findAll();
+router.get("/admin/bots", requireAdmin, async (_req, res): Promise<void> => {
+  const [bots, users] = await Promise.all([
+    store.bots.findAll(),
+    store.users.findAll(),
+  ]);
 
   const result = bots.map((b) => {
     const owner = users.find((u) => u.id === b.userId);
@@ -89,9 +93,9 @@ router.get("/admin/bots", requireAdmin, (_req, res): void => {
   res.json(result);
 });
 
-router.delete("/admin/bots/:id", requireAdmin, (req, res): void => {
+router.delete("/admin/bots/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.deleteById(id);
+  const bot = await store.bots.deleteById(id);
 
   if (!bot) {
     res.status(404).json({ error: "Bot not found" });
@@ -106,9 +110,9 @@ router.delete("/admin/bots/:id", requireAdmin, (req, res): void => {
   res.sendStatus(204);
 });
 
-router.get("/admin/bots/:id/download", requireAdmin, (req, res): void => {
+router.get("/admin/bots/:id/download", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const bot = store.bots.findById(id);
+  const bot = await store.bots.findById(id);
 
   if (!bot || !bot.filePath || !fs.existsSync(bot.filePath)) {
     res.status(404).json({ error: "File not found" });
@@ -118,8 +122,8 @@ router.get("/admin/bots/:id/download", requireAdmin, (req, res): void => {
   res.download(path.resolve(bot.filePath), bot.fileName ?? `bot-${bot.id}`);
 });
 
-router.get("/admin/logs", requireAdmin, (_req, res): void => {
-  const logs = store.logs.findRecent(100);
+router.get("/admin/logs", requireAdmin, async (_req, res): Promise<void> => {
+  const logs = await store.logs.findRecent(100);
   res.json(logs.map((l) => ({ id: l.id, message: l.message, createdAt: l.createdAt })));
 });
 

@@ -7,13 +7,13 @@ import {
 } from "../lib/sessions";
 import type { Bot } from "../lib/store";
 
-export function requireAuth(
+export async function requireAuth(
   req: Request,
   res: Response,
   next: NextFunction,
-): void {
+): Promise<void> {
   const token = req.cookies?.[USER_COOKIE] as string | undefined;
-  const session = getUserSession(token);
+  const session = await getUserSession(token);
   if (!session) {
     res.status(401).json({ error: "Not logged in" });
     return;

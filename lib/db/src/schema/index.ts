@@ -20,3 +20,4 @@
 export * from "./users";
 export * from "./bots";
 export * from "./logs";
+export * from "./sessions";
