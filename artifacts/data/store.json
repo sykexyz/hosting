@@ -1,0 +1,29 @@
+{
+  "users": [
+    {
+      "email": "test@gmail.com",
+      "username": "testuser",
+      "passwordHash": "$2b$10$Cg7lTR.794Fq7bHjsTq0L.biO62K7XMs277v9w2kEZ67ZuT9Z9ewu",
+      "id": 1,
+      "createdAt": "2026-07-10T05:12:03.883Z"
+    }
+  ],
+  "bots": [],
+  "logs": [
+    {
+      "id": 1,
+      "message": "New user signed up: testuser",
+      "createdAt": "2026-07-10T05:12:03.884Z"
+    },
+    {
+      "id": 2,
+      "message": "Admin logged in",
+      "createdAt": "2026-07-10T05:12:03.898Z"
+    }
+  ],
+  "_seq": {
+    "users": 1,
+    "bots": 0,
+    "logs": 2
+  }
+}

@@ -13,7 +13,7 @@ import { logActivity } from "../lib/activity-log";
 
 const router: IRouter = Router();
 
-const ADMIN_IDENTIFIER = "risu";
+const ADMIN_IDENTIFIER = "risu3070@gmail.com";
 const ADMIN_PASSWORD = "cozy24123";
 
 router.post("/admin/login", async (req, res): Promise<void> => {
