@@ -7,15 +7,30 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
-// In production (Railway) the frontend is on a different origin than the API.
-// FRONTEND_URL must be set to the Railway frontend service URL so cookies work.
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL]
+// FRONTEND_URL must be set to the Railway frontend URL so cookies work cross-origin.
+// Without it we fall back to allowing all origins in dev only; in production this
+// would be a security hole (credentials + wildcard), so we warn loudly.
+const frontendUrl = process.env.FRONTEND_URL?.replace(/\/+$/, ""); // strip trailing slash
+
+if (!frontendUrl && process.env.NODE_ENV === "production") {
+  // Non-fatal: log clearly so Railway logs surface the misconfiguration.
+  console.warn(
+    "[WARN] FRONTEND_URL is not set in production. " +
+    "Set it to your Railway frontend service URL so CORS and cookies work correctly."
+  );
+}
+
+const corsOrigin = frontendUrl
+  ? (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+      // Exact match after normalising trailing slashes
+      const allow = !origin || origin.replace(/\/+$/, "") === frontendUrl;
+      cb(null, allow);
+    }
   : true; // dev: allow all origins
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: corsOrigin,
     credentials: true,          // allow cookies cross-origin
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

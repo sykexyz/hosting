@@ -14,15 +14,18 @@ const router: IRouter = Router();
 
 const GMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
 
-const IS_PROD = process.env.NODE_ENV === "production";
+// Use cross-origin cookie settings whenever FRONTEND_URL is set, which means
+// the frontend lives on a different domain (e.g. Railway multi-service deploy).
+// Tying this to NODE_ENV alone is fragile because Railway may not set it.
+const IS_CROSS_ORIGIN = Boolean(process.env.FRONTEND_URL);
 
 function setSessionCookie(res: import("express").Response, token: string) {
   res.cookie(USER_COOKIE, token, {
     httpOnly: true,
-    // In production the frontend is on a different domain (Railway), so we
-    // need sameSite:"none" + secure:true for cookies to be sent cross-origin.
-    sameSite: IS_PROD ? "none" : "lax",
-    secure: IS_PROD,
+    // Cross-origin: SameSite=None + Secure so browsers accept the cookie.
+    // Same-origin (local dev): SameSite=Lax, no Secure needed.
+    sameSite: IS_CROSS_ORIGIN ? "none" : "lax",
+    secure: IS_CROSS_ORIGIN,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 }
