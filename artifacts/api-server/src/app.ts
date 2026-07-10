@@ -11,13 +11,14 @@ const app: Express = express();
 // credentials (cookies) cross-origin without knowing the frontend URL in advance.
 // Railway proxies the request so the Origin header always contains the real
 // browser origin, which the browser then validates against the response header.
-app.options("*", cors({ origin: true, credentials: true })); // explicit pre-flight
 app.use(
   cors({
     origin: true,          // reflect request origin → works with any frontend domain
     credentials: true,     // allow cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    preflightContinue: false,   // cors handles OPTIONS itself, no need for app.options()
+    optionsSuccessStatus: 204,
   }),
 );
 
