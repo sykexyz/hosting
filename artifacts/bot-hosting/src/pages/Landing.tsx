@@ -1,116 +1,193 @@
+import { useState, useEffect } from "react";
 import { Logo } from "../components/Logo";
 import { Link } from "wouter";
-import { SiDiscord, SiTelegram } from "react-icons/si";
+import { SiDiscord, SiTelegram, SiPython, SiJavascript, SiTypescript, SiNodedotjs, SiGo } from "react-icons/si";
+import { FaJava } from "react-icons/fa";
+
+function SplashAnimation({ onComplete }: { onComplete: () => void }) {
+  const [progress, setProgress] = useState(1);
+
+  useEffect(() => {
+    const duration = 2500;
+    const interval = 25;
+    const steps = duration / interval;
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      const nextProgress = Math.min(100, Math.floor((currentStep / steps) * 100));
+      setProgress(nextProgress);
+      
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setTimeout(onComplete, 300);
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [onComplete]);
+
+  const icons = [
+    { Icon: SiPython, color: "#3776AB" },
+    { Icon: SiJavascript, color: "#F7DF1E" },
+    { Icon: SiTypescript, color: "#3178C6" },
+    { Icon: SiNodedotjs, color: "#339933" },
+    { Icon: FaJava, color: "#007396" },
+    { Icon: SiGo, color: "#00ADD8" }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/40 backdrop-blur-2xl transition-opacity duration-500">
+      <div className="relative w-48 h-48 mb-8 splash-orbit-container">
+        {icons.map((item, i) => {
+          const angle = (i / icons.length) * 360;
+          return (
+            <div 
+              key={i} 
+              className="absolute top-1/2 left-1/2 w-12 h-12 -ml-6 -mt-6"
+              style={{ transform: `rotate(${angle}deg) translateY(-80px)` }}
+            >
+              <div className="w-full h-full splash-orbit-icon flex items-center justify-center bg-white rounded-full shadow-lg border border-white/80" style={{ boxShadow: `0 8px 16px ${item.color}40, inset 0 2px 4px rgba(255,255,255,1)` }}>
+                <item.Icon size={24} color={item.color} />
+              </div>
+            </div>
+          );
+        })}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl">
+          <Logo className="w-10 h-10 text-blue-500 drop-shadow-md" />
+        </div>
+      </div>
+      
+      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight mb-8 text-center px-4 drop-shadow-sm">
+        Welcome To 1999 Bot Hosting
+      </h1>
+
+      <div className="w-64 md:w-96 flex flex-col items-center">
+        <div className="w-full h-4 bg-white/50 rounded-full overflow-hidden border border-white/60 shadow-inner mb-2">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-75 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="font-digital text-blue-600 text-xl font-bold drop-shadow-sm">
+          {progress}%
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Landing() {
+  const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
+    if (!hasSeenSplash) {
+      setShowSplash(true);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    sessionStorage.setItem("hasSeenSplash", "true");
+  };
+
   return (
-    <div className="flex flex-col min-h-[100dvh]">
-      <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b border-white/5 bg-background/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <Logo className="w-9 h-9 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" />
-          <span className="text-xl font-bold text-white tracking-tight">1999 Bot Hosting</span>
+    <>
+      {showSplash && <SplashAnimation onComplete={handleSplashComplete} />}
+      <div className={`flex flex-col min-h-[100dvh] transition-opacity duration-1000 ${showSplash ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
+          <header className="h-16 px-6 flex items-center justify-between glass-panel rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/80">
+            <div className="flex items-center gap-3">
+              <Logo className="w-8 h-8 text-blue-600 drop-shadow-sm" />
+              <span className="text-lg font-bold text-slate-800 tracking-tight">1999 Bot Hosting</span>
+            </div>
+            <nav className="flex items-center gap-4">
+              <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                Login
+              </Link>
+              <Link href="/signup" className="btn-3d btn-3d-primary text-sm h-9 px-5 inline-flex items-center justify-center rounded-full">
+                Add Application
+              </Link>
+            </nav>
+          </header>
         </div>
-        <nav className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-            Login
-          </Link>
-          <Link href="/signup" className="btn-3d btn-3d-primary text-sm h-10 px-5 inline-flex items-center justify-center rounded-lg">
-            Deploy Now
-          </Link>
-        </nav>
-      </header>
 
-      <main className="flex-1">
-        <section className="px-6 lg:px-12 py-24 lg:py-32 flex flex-col items-center text-center relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" />
-          
-          <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tighter mb-6 relative">
-            Premium infrastructure <br className="hidden lg:block"/> for your applications
-          </h1>
-          <p className="text-lg lg:text-xl text-blue-200/70 max-w-2xl mb-10 relative">
-            Upload your source code and deploy instantly on dedicated, high-performance slots. Experience glossy, deep, three-dimensional hosting built for serious developers.
-          </p>
-          <div className="flex items-center gap-4 relative">
-            <Link href="/signup" className="btn-3d btn-3d-primary text-base h-12 px-8 inline-flex items-center justify-center rounded-lg shadow-[0_0_30px_rgba(59,130,246,0.4)]">
-              Get Started
-            </Link>
-            <Link href="/login" className="btn-3d border border-white/10 bg-white/5 hover:bg-white/10 text-white text-base h-12 px-8 inline-flex items-center justify-center rounded-lg shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_4px_0_rgba(0,0,0,0.4)]">
-              Client Portal
-            </Link>
-          </div>
-        </section>
-
-        <section className="px-6 lg:px-12 py-24 bg-black/20 border-y border-white/5">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-white mb-4">Dedicated Performance Slots</h2>
-              <p className="text-blue-200/60">Choose the perfect tier for your specific language and workload.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { name: "Starter", ram: "512MB", storage: "1GB", price: "$5" },
-                { name: "Pro", ram: "2048MB", storage: "2GB", price: "$15", popular: true },
-                { name: "Ultra", ram: "4096MB", storage: "5GB", price: "$30" }
-              ].map((plan, i) => (
-                <div key={i} className={`glass-panel p-8 rounded-2xl flex flex-col ${plan.popular ? 'ring-2 ring-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.2)] scale-105 z-10' : ''}`}>
-                  {plan.popular && <div className="text-xs font-bold text-blue-400 tracking-wider uppercase mb-2">Most Popular</div>}
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="text-4xl font-bold text-white mb-6">{plan.price}<span className="text-lg text-white/50 font-normal">/mo</span></div>
-                  <ul className="space-y-4 mb-8 flex-1">
-                    <li className="flex items-center text-blue-100/80">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-3 shadow-[0_0_8px_#3b82f6]"></div>
-                      {plan.ram} Dedicated RAM
-                    </li>
-                    <li className="flex items-center text-blue-100/80">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-3 shadow-[0_0_8px_#3b82f6]"></div>
-                      {plan.storage} NVMe Storage
-                    </li>
-                    <li className="flex items-center text-blue-100/80">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-3 shadow-[0_0_8px_#3b82f6]"></div>
-                      Any Language Support
-                    </li>
-                  </ul>
-                  <Link href="/signup" className={`btn-3d w-full h-11 inline-flex items-center justify-center rounded-lg ${plan.popular ? 'btn-3d-primary' : 'bg-white/10 text-white border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_4px_0_rgba(0,0,0,0.4)]'}`}>
-                    Select Plan
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-white/5 bg-background/80 py-12 px-6 lg:px-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <Logo className="w-7 h-7 drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]" />
-              <span className="text-lg font-bold text-white tracking-tight">1999 Bot Hosting</span>
-            </div>
-            <p className="text-sm text-blue-200/50 max-w-sm">
-              The flagship standard in code deployment and execution. Glossy, powerful, and deeply reliable.
+        <main className="flex-1 pt-32">
+          <section className="px-6 lg:px-12 py-24 lg:py-32 flex flex-col items-center text-center relative">
+            <h1 className="text-5xl lg:text-7xl font-bold text-slate-800 tracking-tighter mb-6 relative drop-shadow-sm">
+              Premium infrastructure <br className="hidden lg:block"/> for your applications
+            </h1>
+            <p className="text-lg lg:text-xl text-slate-600 max-w-2xl mb-10 relative">
+              Upload your source code and deploy instantly on dedicated, high-performance slots. Experience light, airy, liquid glass hosting built for serious developers.
             </p>
-          </div>
-          <div className="md:justify-self-end">
-            <h4 className="text-sm font-bold tracking-widest text-white/40 uppercase mb-6">DEVELOPER</h4>
-            <div className="space-y-4">
-              <a href="https://t.me/cozybalenciaga" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-blue-100 hover:text-white group transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center group-hover:bg-blue-500/40 transition-colors">
-                  <SiTelegram className="text-blue-400" />
+            <div className="flex items-center gap-4 relative">
+              <Link href="/signup" className="btn-3d btn-3d-primary text-base h-14 px-8 inline-flex items-center justify-center rounded-full">
+                Add Application
+              </Link>
+              <Link href="/login" className="btn-3d text-slate-700 text-base h-14 px-8 inline-flex items-center justify-center rounded-full bg-white/40">
+                Sign in Now!
+              </Link>
+            </div>
+          </section>
+
+          <section className="px-6 lg:px-12 py-24 mt-12 relative z-10">
+            <div className="max-w-4xl mx-auto glass-panel p-12 text-center rounded-3xl">
+              <div className="w-16 h-16 mx-auto bg-blue-100 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-white">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <h2 className="text-3xl font-bold text-slate-800 mb-4">100% Free Forever</h2>
+              <p className="text-slate-600 text-lg mb-8 max-w-2xl mx-auto">We believe in making deployment accessible. All of our premium infrastructure slots are completely free to use. No credit card required. No hidden fees.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <div className="bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
+                  <div className="text-blue-600 font-bold mb-2">Dedicated RAM</div>
+                  <p className="text-sm text-slate-600">Resources reserved exclusively for your application's performance.</p>
                 </div>
-                <span className="font-medium">@cozybalenciaga</span>
-              </a>
-              <div className="flex items-center gap-3 text-blue-100/70">
-                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                  <SiDiscord className="text-indigo-400" />
+                <div className="bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
+                  <div className="text-blue-600 font-bold mb-2">NVMe Storage</div>
+                  <p className="text-sm text-slate-600">Lightning fast disk access for databases and temporary files.</p>
                 </div>
-                <span className="font-medium">Discord</span>
+                <div className="bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
+                  <div className="text-blue-600 font-bold mb-2">Any Language</div>
+                  <p className="text-sm text-slate-600">Python, Node.js, Java, TypeScript, and more supported out of the box.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="mt-auto py-12 px-6 lg:px-12 relative z-10 glass-panel border-x-0 border-b-0 rounded-none rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.02)]">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <Logo className="w-7 h-7 text-blue-600" />
+                <span className="text-lg font-bold text-slate-800 tracking-tight">1999 Bot Hosting</span>
+              </div>
+              <p className="text-sm text-slate-500 max-w-sm font-medium">
+                The flagship standard in code deployment and execution. Light, airy, and deeply reliable.
+              </p>
+            </div>
+            <div className="md:justify-self-end">
+              <h4 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-6">DEVELOPER</h4>
+              <div className="space-y-4">
+                <a href="https://t.me/cozybalenciaga" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-slate-600 hover:text-blue-600 group transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-white shadow-sm border border-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <SiTelegram className="text-blue-500" />
+                  </div>
+                  <span className="font-bold text-sm">@cozybalenciaga</span>
+                </a>
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="w-8 h-8 rounded-lg bg-white shadow-sm border border-white flex items-center justify-center">
+                    <SiDiscord className="text-indigo-500" />
+                  </div>
+                  <span className="font-bold text-sm">Discord</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </>
   );
 }

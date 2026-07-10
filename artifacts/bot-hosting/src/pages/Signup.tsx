@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Logo } from "../components/Logo";
 import { Link, useLocation } from "wouter";
 import { useSignup } from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,76 +53,79 @@ export default function Signup() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
-      
-      <Link href="/" className="flex items-center gap-3 mb-8 hover:scale-105 transition-transform">
-        <Logo className="w-12 h-12 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
+      <Link href="/" className="flex items-center gap-3 mb-6 hover:scale-105 transition-transform bg-white/50 backdrop-blur-sm p-3 rounded-full shadow-sm border border-white mt-6">
+        <Logo className="w-10 h-10 text-blue-600 drop-shadow-sm" />
       </Link>
 
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-8">
-          <CardTitle className="text-3xl">Create Account</CardTitle>
-          <CardDescription>Deploy your applications on premium infrastructure</CardDescription>
+      <Card className="w-full max-w-md glass-panel p-2 border-white shadow-lg">
+        <CardHeader className="text-center pb-6 pt-6">
+          <CardTitle className="text-3xl font-bold text-slate-800 drop-shadow-sm">Create Account</CardTitle>
+          <CardDescription className="text-slate-600 font-medium mt-1">Deploy your applications on premium infrastructure</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-slate-700 font-bold ml-1">Email</Label>
               <Input 
                 id="email" 
                 type="email" 
                 placeholder="developer@gmail.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="input-3d h-11 px-4 text-base"
               />
-              {errors.email && <p className="text-sm text-red-400 font-medium">{errors.email}</p>}
+              {errors.email && <p className="text-sm text-red-500 font-bold ml-1 mt-1">{errors.email}</p>}
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-slate-700 font-bold ml-1">Username</Label>
               <Input 
                 id="username" 
                 placeholder="cozydev" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                className="input-3d h-11 px-4 text-base"
               />
-              {errors.username && <p className="text-sm text-red-400 font-medium">{errors.username}</p>}
+              {errors.username && <p className="text-sm text-red-500 font-bold ml-1 mt-1">{errors.username}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-slate-700 font-bold ml-1">Password</Label>
               <Input 
                 id="password" 
                 type="password" 
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="input-3d h-11 px-4 text-base"
               />
-              {errors.password && <p className="text-sm text-red-400 font-medium">{errors.password}</p>}
+              {errors.password && <p className="text-sm text-red-500 font-bold ml-1 mt-1">{errors.password}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-slate-700 font-bold ml-1">Confirm Password</Label>
               <Input 
                 id="confirmPassword" 
                 type="password" 
                 placeholder="••••••••" 
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-3d h-11 px-4 text-base"
               />
-              {errors.confirmPassword && <p className="text-sm text-red-400 font-medium">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p className="text-sm text-red-500 font-bold ml-1 mt-1">{errors.confirmPassword}</p>}
             </div>
 
-            <Button type="submit" className="w-full mt-4" disabled={signup.isPending}>
-              {signup.isPending ? "Creating..." : "Create Account"}
-            </Button>
+            <button type="submit" className="w-full btn-3d btn-3d-primary h-12 mt-6 text-lg font-bold" disabled={signup.isPending}>
+              {signup.isPending ? "Creating..." : "Add Application"}
+            </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-blue-100/60">
-            Already have an account? <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">Log in</Link>
+          <div className="mt-6 text-center text-sm text-slate-600 font-medium bg-white/40 p-4 rounded-xl border border-white shadow-inner">
+            Already have an account? <Link href="/login" className="text-blue-600 hover:text-blue-500 font-bold ml-1 hover:underline">Log in</Link>
           </div>
         </CardContent>
       </Card>
+      <div className="h-6"></div>
     </div>
   );
 }
