@@ -1,15 +1,17 @@
-# [Project name]
+# 1999 Bot Hosting
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A bot hosting platform: users sign up, log in, and manage hosted bots from a dashboard; admins have a separate login and dashboard. Glassmorphism/liquid-glass visual style with an animated intro splash and a 3D language picker.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Workflows are already configured and running: `artifacts/bot-hosting: web` (frontend), `artifacts/api-server: API Server` (backend), `artifacts/mockup-sandbox: Component Preview Server` (canvas previews).
+- `pnpm --filter @workspace/api-server run dev` — run the API server
+- `pnpm --filter @workspace/bot-hosting run dev` — run the frontend
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — Postgres connection string (already provisioned via Replit's built-in Postgres database)
 
 ## Stack
 
@@ -38,7 +40,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The dev/start commands above are wired into the pre-configured Replit workflows (which supply `PORT`/`BASE_PATH` automatically). Running them directly in a shell requires setting those env vars yourself.
+- `pnpm run typecheck` currently fails in `artifacts/bot-hosting` (5 pre-existing `TS2339` errors on `.error` in Login/Signup/Dashboard/AdminLogin/AdminDashboard, from the imported Orval-generated API error type). Pre-existing from import, not introduced by setup.
 
 ## Pointers
 
