@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { Logo } from "../components/Logo";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { 
   useGetCurrentUser, 
   useListBots, 
@@ -219,11 +220,12 @@ export default function Dashboard() {
             <Logo className="w-8 h-8 text-blue-600 drop-shadow-sm" />
             <span className="text-lg font-bold text-slate-800 tracking-tight hidden md:inline-block">Client Portal</span>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="text-sm font-medium text-slate-500 hidden sm:block">
+          <div className="flex items-center gap-4">
+            <div className="text-sm font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
               {user?.email}
             </div>
-            <button className="btn-3d text-sm h-9 px-5 inline-flex items-center justify-center rounded-full bg-white/40" onClick={handleLogout}>Log out</button>
+            <ThemeToggle />
+            <button className="btn-3d text-sm h-9 px-5 inline-flex items-center justify-center rounded-full bg-white/40 dark:bg-transparent" onClick={handleLogout}>Log out</button>
           </div>
         </header>
       </div>

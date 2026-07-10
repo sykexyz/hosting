@@ -56,25 +56,25 @@ export default function AdminDashboard() {
   };
 
   if (loadingUsers || loadingBots || loadingLogs) {
-    return <div className="min-h-screen flex items-center justify-center text-white/50 font-mono tracking-widest uppercase">Initializing...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-white/50">Loading...</div>;
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#050505] text-white p-6 lg:p-10 font-mono">
+    <div className="min-h-[100dvh] bg-[#050505] text-white p-6 lg:p-10">
       <header className="flex items-center justify-between mb-10 border-b border-white/10 pb-6">
         <div className="flex items-center gap-4">
-          <div className="w-3 h-3 bg-red-500 rounded-sm shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse"></div>
-          <h1 className="text-xl font-bold tracking-widest text-red-50 uppercase">Root Terminal</h1>
+          <div className="w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse"></div>
+          <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
         </div>
         <Button variant="outline" size="sm" onClick={handleLogout} className="border-white/10 hover:bg-white/5 text-xs tracking-wider">
-          DISCONNECT
+          Log out
         </Button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* USERS */}
-        <Card className="bg-black/50 border-white/5 shadow-2xl rounded-none col-span-1">
+        <Card className="!bg-black/50 !border-white/5 shadow-2xl rounded-none col-span-1">
           <CardHeader className="border-b border-white/5">
             <CardTitle className="text-sm tracking-widest text-white/50 uppercase">Registered Clients</CardTitle>
           </CardHeader>
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* BOTS */}
-        <Card className="bg-black/50 border-white/5 shadow-2xl rounded-none col-span-1 lg:col-span-2">
+        <Card className="!bg-black/50 !border-white/5 shadow-2xl rounded-none col-span-1 lg:col-span-2">
           <CardHeader className="border-b border-white/5 flex flex-row items-center justify-between">
             <CardTitle className="text-sm tracking-widest text-white/50 uppercase">Active Slots</CardTitle>
             <div className="text-xs text-white/40">{bots?.length || 0} Total</div>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* LOGS */}
-        <Card className="bg-black/50 border-white/5 shadow-2xl rounded-none col-span-1 lg:col-span-3">
+        <Card className="!bg-black/50 !border-white/5 shadow-2xl rounded-none col-span-1 lg:col-span-3">
           <CardHeader className="border-b border-white/5">
             <CardTitle className="text-sm tracking-widest text-white/50 uppercase">System Logs</CardTitle>
           </CardHeader>

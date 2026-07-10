@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Logo } from "../components/Logo";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { Link } from "wouter";
 import { SiDiscord, SiTelegram, SiPython, SiJavascript, SiTypescript, SiNodedotjs, SiGo } from "react-icons/si";
 import { FaJava } from "react-icons/fa";
@@ -47,8 +48,14 @@ function SplashAnimation({ onComplete }: { onComplete: () => void }) {
               className="absolute top-1/2 left-1/2 w-12 h-12 -ml-6 -mt-6"
               style={{ transform: `rotate(${angle}deg) translateY(-80px)` }}
             >
-              <div className="w-full h-full splash-orbit-icon flex items-center justify-center bg-white rounded-full shadow-lg border border-white/80" style={{ boxShadow: `0 8px 16px ${item.color}40, inset 0 2px 4px rgba(255,255,255,1)` }}>
-                <item.Icon size={24} color={item.color} />
+              <div
+                className="w-full h-full splash-orbit-icon flex items-center justify-center bg-white rounded-full shadow-lg border border-white/80"
+                style={{
+                  color: item.color,
+                  boxShadow: `0 0 18px 4px ${item.color}70, 0 8px 16px ${item.color}50, inset 0 2px 4px rgba(255,255,255,1)`
+                }}
+              >
+                <item.Icon size={24} color={item.color} style={{ filter: `drop-shadow(0 0 6px ${item.color})` }} />
               </div>
             </div>
           );
@@ -63,9 +70,9 @@ function SplashAnimation({ onComplete }: { onComplete: () => void }) {
       </h1>
 
       <div className="w-64 md:w-96 flex flex-col items-center">
-        <div className="w-full h-4 bg-white/50 rounded-full overflow-hidden border border-white/60 shadow-inner mb-2">
+        <div className="w-full h-4 bg-white/60 rounded-full overflow-hidden border border-white/80 shadow-inner mb-2">
           <div 
-            className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-75 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            className="h-full bg-gradient-to-r from-white via-sky-100 to-white transition-all duration-75 ease-out shadow-[0_0_18px_6px_rgba(255,255,255,0.9)]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -102,12 +109,13 @@ export default function Landing() {
               <Logo className="w-8 h-8 text-blue-600 drop-shadow-sm" />
               <span className="text-lg font-bold text-slate-800 tracking-tight">1999 Bot Hosting</span>
             </div>
-            <nav className="flex items-center gap-4">
-              <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+            <nav className="flex items-center gap-3">
+              <ThemeToggle />
+              <Link href="/login" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-300 transition-colors">
                 Login
               </Link>
               <Link href="/signup" className="btn-3d btn-3d-primary text-sm h-9 px-5 inline-flex items-center justify-center rounded-full">
-                Add Application
+                Sign Up
               </Link>
             </nav>
           </header>
@@ -123,9 +131,9 @@ export default function Landing() {
             </p>
             <div className="flex items-center gap-4 relative">
               <Link href="/signup" className="btn-3d btn-3d-primary text-base h-14 px-8 inline-flex items-center justify-center rounded-full">
-                Add Application
+                Get Started
               </Link>
-              <Link href="/login" className="btn-3d text-slate-700 text-base h-14 px-8 inline-flex items-center justify-center rounded-full bg-white/40">
+              <Link href="/login" className="btn-3d text-slate-700 dark:text-slate-200 text-base h-14 px-8 inline-flex items-center justify-center rounded-full bg-white/40 dark:bg-transparent">
                 Sign in Now!
               </Link>
             </div>

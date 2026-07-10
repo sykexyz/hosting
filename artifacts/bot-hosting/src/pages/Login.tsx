@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Logo } from "../components/Logo";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { Link, useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
@@ -18,12 +19,6 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (email.trim().toLowerCase() === "risu3070@gmail.com" && password === "cozy24") {
-      toast({ title: "Authorized", description: "Entering admin terminal" });
-      setLocation("/admin");
-      return;
-    }
-
     login.mutate({ data: { email, password } }, {
       onSuccess: () => {
         toast({ title: "Welcome back", description: "Authenticated successfully" });
@@ -37,7 +32,10 @@ export default function Login() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 relative">
-      <Link href="/" className="flex items-center gap-3 mb-8 hover:scale-105 transition-transform bg-white/50 backdrop-blur-sm p-4 rounded-full shadow-sm border border-white">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <Link href="/" className="flex items-center gap-3 mb-8 hover:scale-105 transition-transform bg-white/50 dark:bg-white/5 backdrop-blur-sm p-4 rounded-full shadow-sm border border-white dark:border-white/10">
         <Logo className="w-12 h-12 text-blue-600 drop-shadow-sm" />
       </Link>
 
