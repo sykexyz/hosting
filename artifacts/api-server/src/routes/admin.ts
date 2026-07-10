@@ -31,12 +31,12 @@ router.post("/admin/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const IS_PROD = process.env.NODE_ENV === "production";
+  const isCrossOrigin = Boolean(process.env.FRONTEND_URL);
   const token = createAdminSession();
   res.cookie(ADMIN_COOKIE, token, {
     httpOnly: true,
-    sameSite: IS_PROD ? "none" : "lax",
-    secure: IS_PROD,
+    sameSite: isCrossOrigin ? "none" : "lax",
+    secure: isCrossOrigin,
     maxAge: 12 * 60 * 60 * 1000,
   });
 
