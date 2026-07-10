@@ -14,10 +14,15 @@ const router: IRouter = Router();
 
 const GMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
 function setSessionCookie(res: import("express").Response, token: string) {
   res.cookie(USER_COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
+    // In production the frontend is on a different domain (Railway), so we
+    // need sameSite:"none" + secure:true for cookies to be sent cross-origin.
+    sameSite: IS_PROD ? "none" : "lax",
+    secure: IS_PROD,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 }

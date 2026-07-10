@@ -29,10 +29,12 @@ router.post("/admin/login", async (req, res): Promise<void> => {
     return;
   }
 
+  const IS_PROD = process.env.NODE_ENV === "production";
   const token = createAdminSession();
   res.cookie(ADMIN_COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: IS_PROD ? "none" : "lax",
+    secure: IS_PROD,
     maxAge: 12 * 60 * 60 * 1000,
   });
 
