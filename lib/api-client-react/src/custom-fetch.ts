@@ -26,7 +26,23 @@ let _authTokenGetter: AuthTokenGetter | null = null;
  * Pass `null` to clear the base URL.
  */
 export function setBaseUrl(url: string | null): void {
-  _baseUrl = url ? url.replace(/\/+$/, "") : null;
+  if (!url) {
+    _baseUrl = null;
+    return;
+  }
+  const trimmed = url.trim().replace(/\/+$/, "");
+  // Guard against missing protocol — a URL without http(s):// gets treated as a
+  // relative path by the browser, producing garbage like
+  // https://frontend.railway.app/api-server.railway.app/api/auth/login
+  if (trimmed && !trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    console.warn(
+      `[api-client] setBaseUrl: "${trimmed}" is missing a protocol. ` +
+      `Prepending https://. Set VITE_API_URL to a full URL like https://${trimmed}`
+    );
+    _baseUrl = `https://${trimmed}`;
+    return;
+  }
+  _baseUrl = trimmed;
 }
 
 /**
