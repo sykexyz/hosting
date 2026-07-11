@@ -10,7 +10,7 @@ A bot hosting platform: users sign up, log in, and manage hosted bots from a das
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- No database required — data stored in `artifacts/api-server/data/store.json` (resets on container rebuild)
+- Uses PostgreSQL (via `DATABASE_URL`, provisioned in this Repl) — schema is auto-created/verified on server startup (`ensureSchema()`)
 
 ## Stack
 
@@ -23,9 +23,9 @@ A bot hosting platform: users sign up, log in, and manage hosted bots from a das
 
 ## Where things live
 
-- `artifacts/api-server/src/lib/store.ts` — JSON file data store (source of truth for all persistence)
+- `artifacts/api-server/src/lib/store.ts` — Drizzle/PostgreSQL data access layer (source of truth for all persistence)
+- `artifacts/api-server/src/lib/migrate.ts` — idempotent `ensureSchema()`, creates tables on startup if missing
 - `artifacts/api-server/src/routes/` — Express route handlers (auth, bots, admin)
-- `artifacts/api-server/data/store.json` — live data file (auto-created; resets on container rebuild)
 - `artifacts/bot-hosting/src/index.css` — all theme variables and utility classes
 - `artifacts/bot-hosting/src/pages/Dashboard.tsx` — main user dashboard with upload animation
 - `lib/api-zod/` — Zod schemas for API validation
@@ -33,7 +33,7 @@ A bot hosting platform: users sign up, log in, and manage hosted bots from a das
 
 ## Architecture decisions
 
-- **JSON file storage instead of PostgreSQL**: user requested no database dependency. Data stored in `artifacts/api-server/data/store.json` with atomic writes (temp + rename). Resets on container rebuild — that's intentional.
+- **PostgreSQL via Drizzle**: previously used JSON file storage; migrated to PostgreSQL (originally for a Railway deployment) — `DATABASE_URL` is required and the server refuses to start without it. Schema is auto-created/verified on every startup via `ensureSchema()`.
 - **Always-dark theme**: site is permanently in dark/black-galaxy mode. The `dark` class is force-applied in `main.tsx`; ThemeToggle is hidden via CSS.
 - **Upload terminal animation**: file upload shows a fake module-download animation (per language) while the real upload runs in parallel. Success/error shown when both the animation and upload resolve.
 
@@ -44,15 +44,13 @@ Bot hosting platform: users sign up (Gmail only), log in, deploy bots by uploadi
 ## User preferences
 
 - Black and white neon theme, black galaxy background with stars
-- No database required — JSON file storage is fine (data can reset)
 - File upload must show module-download loading animation, then "Successfully hosted: filename"
 - Site always dark, no theme toggle
 
 ## Gotchas
 
 - The dev/start commands above are wired into Replit workflows (which supply `PORT`/`BASE_PATH`). Running directly in a shell requires setting those env vars yourself.
-- JSON store is process-local and file-based. Concurrent multi-process deployments would need proper locking or a database upgrade.
-- `pnpm run typecheck` has 5 pre-existing `TS2339` errors in `artifacts/bot-hosting` on `.error` in Orval-generated API hooks — not introduced by these changes.
+- Requires `DATABASE_URL` (PostgreSQL) — the API server exits immediately on startup if it's not set.
 
 ## Pointers
 
