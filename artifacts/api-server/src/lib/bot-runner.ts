@@ -4,7 +4,7 @@
  * Installs detected dependencies before first run.
  */
 
-import { spawn, execSync, type ChildProcess } from "node:child_process";
+import { spawn, execSync, spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { logActivity } from "./activity-log.js";
@@ -16,6 +16,40 @@ const running = new Map<number, ChildProcess>();
 
 // Base directory for per-bot environments (node_modules / venvs)
 const BOT_ENVS = path.join(process.cwd(), "bot-envs");
+
+// ---------------------------------------------------------------------------
+// Python binary discovery
+// Nix-installed Python may live outside the default shell PATH (e.g. on
+// Railway). Try several candidate names and cache the first one that works.
+// ---------------------------------------------------------------------------
+
+let _python3: string | null | undefined = undefined; // undefined = not yet resolved
+
+function findPython3(): string {
+  if (_python3 !== undefined) return _python3 ?? "python3";
+
+  const candidates = ["python3", "python", "python3.13", "python3.12", "python3.11", "python3.10"];
+  for (const bin of candidates) {
+    try {
+      const result = spawnSync(bin, ["--version"], { timeout: 5_000, encoding: "utf8" });
+      if (result.status === 0 && result.stdout) {
+        _python3 = bin;
+        return bin;
+      }
+    } catch {
+      // try next
+    }
+  }
+  // Last-ditch: ask the shell
+  try {
+    const found = execSync("which python3 || which python", { timeout: 5_000, encoding: "utf8" }).trim().split("\n")[0];
+    if (found) { _python3 = found; return found; }
+  } catch {
+    // ignore
+  }
+  _python3 = "python3"; // fall back and let the OS error surface
+  return _python3;
+}
 fs.mkdirSync(BOT_ENVS, { recursive: true });
 
 function envDir(botId: number): string {
@@ -33,7 +67,8 @@ function installPython(packages: string[], dir: string): void {
   const venv = path.join(dir, "venv");
 
   if (!fs.existsSync(path.join(venv, "bin", "python3"))) {
-    execSync(`python3 -m venv "${venv}"`, { timeout: 60_000, stdio: "pipe" });
+    const py = findPython3();
+    execSync(`"${py}" -m venv "${venv}"`, { timeout: 60_000, stdio: "pipe" });
   }
 
   const pip = path.join(venv, "bin", "pip");
@@ -117,7 +152,7 @@ export async function startBot(
 
   if (language === "python") {
     const venvPy = path.join(dir, "venv", "bin", "python3");
-    cmd = fs.existsSync(venvPy) ? venvPy : "python3";
+    cmd = fs.existsSync(venvPy) ? venvPy : findPython3();
     args = [filePath];
   } else if (language === "javascript") {
     // Run from a copy with an explicit .cjs/.mjs extension so Node's module
