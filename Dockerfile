@@ -14,8 +14,10 @@ RUN npm install -g pnpm@10.26.1
 
 WORKDIR /app
 
-# Copy workspace manifests first for better layer caching
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+# Copy workspace manifests + root TypeScript configs first (for layer caching).
+# tsconfig.base.json lives at the repo root; every package tsconfig extends it
+# via a relative path (../../tsconfig.base.json) — without it the build fails.
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc tsconfig.base.json tsconfig.json ./
 
 # Copy all packages (source + configs)
 COPY lib/ ./lib/
