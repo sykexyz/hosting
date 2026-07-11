@@ -32,16 +32,27 @@ RUN pnpm --filter @workspace/api-server run build
 ## ── Stage 2: runtime ────────────────────────────────────────────────────────
 FROM node:24-bookworm-slim AS runtime
 
-# Same python3 packages needed at runtime so the server can spawn python bots
+# Python3 is required at runtime so the server can spawn python bots
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
+# Install pnpm so Railway's configured start command
+# "pnpm --filter @workspace/api-server start" resolves correctly.
+RUN npm install -g pnpm@10.26.1
+
 WORKDIR /app
 
-# Copy built output + runtime node_modules from builder
+# Workspace manifests needed for pnpm --filter to resolve the package
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+# api-server package.json (contains the "start" script definition)
+COPY --from=builder /app/artifacts/api-server/package.json ./artifacts/api-server/package.json
+
+# Built output + runtime node_modules
 COPY --from=builder /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=builder /app/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
 COPY --from=builder /app/node_modules ./node_modules
@@ -58,4 +69,6 @@ ENV PORT=8080
 # Run from the api-server dir so relative paths (bot-envs/{id}/venv etc.) stay consistent.
 WORKDIR /app/artifacts/api-server
 
+# Railway may override this CMD with "pnpm --filter @workspace/api-server start"
+# (which pnpm resolves to the same node command below). Both work.
 CMD ["node", "--enable-source-maps", "./dist/index.mjs"]
