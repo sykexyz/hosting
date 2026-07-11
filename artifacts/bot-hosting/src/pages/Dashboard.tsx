@@ -665,7 +665,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <Label className="text-white/60 font-bold text-sm">Application Name</Label>
-                        <Input className="input-3d h-11 px-4" value={newBotName} onChange={e => setNewBotName(e.target.value)} placeholder="e.g. prod-worker-1" />
+                        <Input className="input-3d h-11 px-4" value={newBotName} onChange={e => setNewBotName(e.target.value)} placeholder="Bot name" />
                       </div>
 
                       <div className="space-y-2 md:col-span-2">

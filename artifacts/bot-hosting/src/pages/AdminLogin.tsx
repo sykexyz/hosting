@@ -19,13 +19,13 @@ export default function AdminLogin() {
     e.preventDefault();
     adminLogin.mutate({ data: { identifier, password } }, {
       onSuccess: () => {
-        toast.success("Access granted", { description: "Welcome to the admin panel" });
+        toast.success("Logged in", { description: "Welcome back" });
         setLocation("/admin");
       },
       onError: (err: unknown) => {
         setShaking(true);
         setTimeout(() => setShaking(false), 600);
-        toast.error("Access denied", { description: (err as any)?.data?.error || "Invalid credentials" });
+        toast.error("Login failed", { description: (err as any)?.data?.error || "Invalid credentials" });
       },
     });
   };
@@ -50,7 +50,7 @@ export default function AdminLogin() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,100,100,0.8)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <h1 className="text-2xl font-bold text-white mb-1">Admin Panel</h1>
-            <p className="text-white/35 text-sm">Restricted access only</p>
+            <p className="text-white/35 text-sm">Admin login</p>
           </div>
 
           <div className="px-6 pb-7">

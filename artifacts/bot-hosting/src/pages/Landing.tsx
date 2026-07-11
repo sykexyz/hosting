@@ -108,7 +108,7 @@ function SplashAnimation({ onComplete }: { onComplete: () => void }) {
             >
               Welcome to 1999 Bot Hosting
             </h1>
-            <p className="text-white/30 text-sm mb-10 font-mono tracking-widest">INITIALIZING SYSTEMS</p>
+            <p className="text-white/30 text-sm mb-10 font-mono tracking-widest">LOADING...</p>
 
             {/* Progress bar */}
             <div className="w-72 md:w-96">
@@ -126,7 +126,7 @@ function SplashAnimation({ onComplete }: { onComplete: () => void }) {
                 />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-white/25 font-mono">boot sequence</span>
+                <span className="text-xs text-white/25 font-mono">loading</span>
                 <span
                   className="font-mono text-sm font-bold text-white/70"
                   style={{ fontFamily: "'Orbitron', monospace" }}
@@ -267,7 +267,7 @@ export default function Landing() {
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-3" style={{ fontSize: "clamp(1.4rem, 4vw, 1.875rem)" }}>100% Free Forever</h2>
               <p className="text-white/40 text-base mb-8 max-w-2xl mx-auto">
-                All of our premium infrastructure slots are completely free. No credit card. No hidden fees.
+                All hosting slots are completely free. No credit card. No hidden fees.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                 {[

@@ -55,7 +55,7 @@ export default function Login() {
         <div className={`w-full glass-panel shadow-[0_8px_60px_rgba(0,0,0,0.8)] ${shaking ? "shake" : ""}`} style={{ borderColor: "rgba(255,255,255,0.09)" }}>
           <div className="text-center pb-6 pt-7 px-6">
             <h1 className="text-2xl font-bold text-white mb-1">Client Login</h1>
-            <p className="text-white/35 text-sm font-medium">Access your hosting environment</p>
+            <p className="text-white/35 text-sm font-medium">Sign in to your account</p>
           </div>
 
           <div className="px-6 pb-7">
@@ -65,7 +65,7 @@ export default function Login() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="developer@gmail.com"
+                  placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
