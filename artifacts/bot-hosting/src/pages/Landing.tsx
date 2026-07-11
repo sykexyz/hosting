@@ -152,33 +152,23 @@ function ParallaxHero() {
   return (
     <section ref={ref} className="relative px-6 lg:px-12 py-28 lg:py-40 flex flex-col items-center text-center overflow-hidden">
       <motion.div style={{ y, opacity }} className="relative z-10 flex flex-col items-center">
-        {/* Hero badge */}
-        <div
-          className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-white/60 tracking-wider uppercase"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)] animate-pulse" />
-          Systems Online
-        </div>
-
         <h1
-          className="text-5xl lg:text-7xl font-bold text-white tracking-tighter mb-6 glitch"
-          data-text="Premium infrastructure for your applications"
+          className="text-5xl lg:text-7xl font-bold text-white tracking-tighter mb-6"
           style={{
             textShadow: "0 0 60px rgba(200,180,255,0.2)",
             fontSize: "clamp(2.2rem, 6vw, 4.5rem)",
           }}
         >
-          Premium infrastructure<br className="hidden lg:block" />
-          <span className="text-white/70"> for your applications</span>
+          Host your bots<br className="hidden lg:block" />
+          <span className="text-white/70"> for free</span>
         </h1>
         <p className="text-base lg:text-lg text-white/45 max-w-2xl mb-10" style={{ fontSize: "clamp(0.95rem, 2.5vw, 1.125rem)" }}>
-          Upload your source code and deploy instantly on dedicated, high-performance slots.
-          Black-galaxy hosting built for serious developers.
+          Upload your source code and keep your bots running 24/7.
+          Supports Python, JavaScript, TypeScript, and more.
         </p>
         <div className="flex items-center gap-4">
           <Link href="/signup" className="btn-3d btn-3d-primary text-base h-13 px-8 inline-flex items-center justify-center rounded-full" style={{ height: "52px" }}>
-            Get Started Free
+            Get Started
           </Link>
           <Link href="/login" className="btn-3d text-base h-13 px-8 inline-flex items-center justify-center rounded-full" style={{ height: "52px" }}>
             Sign In
