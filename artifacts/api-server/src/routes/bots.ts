@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import fs from "node:fs";
+import path from "node:path";
 import { store, type Bot } from "../lib/store";
 import { CreateBotBody } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
@@ -123,12 +124,8 @@ router.post(
       filePath: req.file.path,
     });
 
-    if (!updated) {
-      res.status(404).json({ error: "Bot not found" });
-      return;
-    }
+    if (!updated) { res.status(404).json({ error: "Bot not found" }); return; }
 
-    // Detect packages from the uploaded source so the frontend can animate them
     let detectedPackages: string[] = [];
     try {
       const source = fs.readFileSync(req.file.path, "utf-8");
@@ -139,6 +136,43 @@ router.post(
     res.json({ ...serializeBot(updated), detectedPackages });
   },
 );
+
+// Save source code sent as plain text (replaces file upload for the textarea flow)
+router.post("/bots/:id/source", requireAuth, requireOwnedBot, async (req, res): Promise<void> => {
+  const bot = req.bot!;
+  const { code, fileName } = req.body as { code?: string; fileName?: string };
+
+  if (typeof code !== "string" || code.trim().length === 0) {
+    res.status(400).json({ error: "code is required" });
+    return;
+  }
+
+  // Determine file extension from language
+  const extMap: Record<string, string> = {
+    python: "py", javascript: "js", typescript: "ts", java: "java", other: "txt",
+  };
+  const ext = extMap[bot.language] ?? "txt";
+  const name = fileName?.trim() || `bot.${ext}`;
+
+  // Write to uploads directory
+  const uploadsDir = path.join(process.cwd(), "uploads");
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  const filePath = path.join(uploadsDir, `${bot.id}-${Date.now()}-${name}`);
+
+  // Remove old file if any
+  if (bot.filePath && fs.existsSync(bot.filePath) && bot.filePath !== filePath) {
+    fs.unlinkSync(bot.filePath);
+  }
+
+  fs.writeFileSync(filePath, code, "utf-8");
+
+  const updated = await store.bots.update(bot.id, { fileName: name, filePath });
+  if (!updated) { res.status(404).json({ error: "Bot not found" }); return; }
+
+  const detectedPackages = detectPackages(bot.language, code);
+  logActivity(`Source saved for bot "${bot.name}" (${detectedPackages.length} deps detected)`).catch(() => {});
+  res.json({ ...serializeBot(updated), detectedPackages });
+});
 
 router.post("/bots/:id/start", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);

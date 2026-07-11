@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { logActivity } from "./activity-log.js";
 import { detectPackages } from "./dep-detector.js";
+import { store } from "./store.js";
 
 // botId → live process
 const running = new Map<number, ChildProcess>();
@@ -150,11 +151,14 @@ export async function startBot(
   proc.on("exit", (code, signal) => {
     running.delete(botId);
     logActivity(`Bot "${botName}" exited (code=${code ?? "?"} signal=${signal ?? "-"})`).catch(() => {});
+    // Always sync DB status so UI reflects reality
+    store.bots.update(botId, { status: "stopped" }).catch(() => {});
   });
 
   proc.on("error", (err) => {
     running.delete(botId);
     logActivity(`Bot "${botName}" spawn error: ${err.message}`).catch(() => {});
+    store.bots.update(botId, { status: "stopped" }).catch(() => {});
   });
 
   logActivity(`Bot "${botName}" started (pid=${proc.pid}, lang=${language}, deps=[${packages.join(",")}])`).catch(() => {});

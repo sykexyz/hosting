@@ -214,8 +214,7 @@ export default function Dashboard() {
   const [newBotLanguage, setNewBotLanguage] = useState<BotInputLanguage>(BotInputLanguage.python);
   const [newBotRam, setNewBotRam] = useState<BotInputRamMb>(BotInputRamMb.NUMBER_512);
   const [newBotStorage, setNewBotStorage] = useState<BotInputStorageMb>(BotInputStorageMb.NUMBER_1024);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sourceCode, setSourceCode] = useState("");
   const [detailsBotId, setDetailsBotId] = useState<number | null>(null);
 
   // Upload animation state
@@ -281,8 +280,8 @@ export default function Dashboard() {
 
   const handleDeploy = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newBotName || !selectedFile) {
-      toast({ title: "Missing Information", description: "Name and source file are required.", variant: "destructive" });
+    if (!newBotName || !sourceCode.trim()) {
+      toast({ title: "Missing Information", description: "Name and source code are required.", variant: "destructive" });
       return;
     }
 
@@ -290,32 +289,31 @@ export default function Dashboard() {
       { data: { name: newBotName, language: newBotLanguage, ramMb: newBotRam, storageMb: newBotStorage } },
       {
         onSuccess: async (createdBot) => {
-          const fileName = selectedFile.name;
+          const savedLang = newBotLanguage;
+          const savedCode = sourceCode;
           setIsDeploying(false);
           setNewBotName("");
-          setSelectedFile(null);
-          if (fileInputRef.current) fileInputRef.current.value = "";
+          setSourceCode("");
 
-          // Upload the file first, then get real detected packages from the response
-          const formData = new FormData();
-          formData.append("file", selectedFile);
+          // Save source code to server
           let detectedPackages: string[] = [];
           let uploadError: string | undefined;
           try {
-            const res = await fetch(`${import.meta.env.BASE_URL}api/bots/${createdBot.id}/upload`, {
+            const res = await fetch(`${import.meta.env.BASE_URL}api/bots/${createdBot.id}/source`, {
               method: "POST",
-              body: formData,
+              headers: { "Content-Type": "application/json" },
               credentials: "include",
+              body: JSON.stringify({ code: savedCode }),
             });
             if (!res.ok) {
               const body = await res.json().catch(() => ({})) as { error?: string };
-              uploadError = body.error ?? "Upload failed";
+              uploadError = body.error ?? "Save failed";
             } else {
               const body = await res.json().catch(() => ({})) as { detectedPackages?: string[] };
               detectedPackages = body.detectedPackages ?? [];
             }
           } catch (err: any) {
-            uploadError = err?.message ?? "Upload failed";
+            uploadError = err?.message ?? "Save failed";
           }
 
           if (uploadError) {
@@ -323,14 +321,13 @@ export default function Dashboard() {
             return;
           }
 
-          // Use real detected packages; fall back to language defaults if none found
+          // Animate real packages (or fallback defaults if source has no imports)
           const steps = detectedPackages.length > 0
             ? detectedPackages
-            : (LANG_MODULES[newBotLanguage] ?? LANG_MODULES.other!);
+            : (LANG_MODULES[savedLang] ?? LANG_MODULES.other!);
 
-          // Now start the animation — upload is already done
           uploadDoneRef.current = { ok: true };
-          setUploadPhase({ kind: "loading", fileName, steps, stepIdx: 0 });
+          setUploadPhase({ kind: "loading", fileName: `bot.${savedLang === "python" ? "py" : savedLang === "javascript" ? "js" : savedLang === "typescript" ? "ts" : savedLang === "java" ? "java" : "txt"}`, steps, stepIdx: 0 });
         },
         onError: (err) => {
           toast({ title: "Provisioning failed", description: err.data?.error || "Failed to create slot", variant: "destructive" });
@@ -511,29 +508,35 @@ export default function Dashboard() {
                   </div>
 
                   <div className="space-y-3 md:col-span-2">
-                    <Label className="text-white/70 font-bold">Source Code Package</Label>
-                    <div className="relative border-2 border-dashed border-white/12 rounded-2xl p-10 text-center hover:border-white/25 transition-colors bg-white/[0.02]">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        required
+                    <Label className="text-white/70 font-bold">Source Code</Label>
+                    <div className="relative rounded-xl border border-white/12 bg-black/40 overflow-hidden focus-within:border-white/30 transition-colors">
+                      {/* Fake terminal header */}
+                      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-white/8 bg-white/[0.02]">
+                        <div className="w-2 h-2 rounded-full bg-white/15" />
+                        <div className="w-2 h-2 rounded-full bg-white/10" />
+                        <div className="w-2 h-2 rounded-full bg-white/8" />
+                        <span className="ml-2 text-[10px] text-white/25 font-mono tracking-widest uppercase">
+                          {newBotLanguage === "python" ? "bot.py" : newBotLanguage === "javascript" ? "bot.js" : newBotLanguage === "typescript" ? "bot.ts" : newBotLanguage === "java" ? "Bot.java" : "bot.txt"}
+                        </span>
+                      </div>
+                      <textarea
+                        className="w-full bg-transparent text-white/80 font-mono text-sm px-4 py-3 resize-none outline-none placeholder:text-white/20 min-h-[220px]"
+                        placeholder={newBotLanguage === "python"
+                          ? "import discord\n\nclient = discord.Client()\n\n@client.event\nasync def on_ready():\n    print('Bot is online!')\n\nclient.run('YOUR_TOKEN')"
+                          : newBotLanguage === "javascript"
+                          ? "const { Client } = require('discord.js');\nconst client = new Client({ intents: [] });\n\nclient.once('ready', () => console.log('Online!'));\nclient.login('YOUR_TOKEN');"
+                          : "// Paste your bot source code here"}
+                        value={sourceCode}
+                        onChange={e => setSourceCode(e.target.value)}
+                        spellCheck={false}
+                        autoCorrect="off"
+                        autoCapitalize="off"
                       />
-                      <div className="flex flex-col items-center justify-center pointer-events-none">
-                        <div className="w-12 h-12 rounded-full border border-white/15 flex items-center justify-center mb-4 bg-white/4">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        </div>
-                        {selectedFile ? (
-                          <div className="text-white font-bold bg-white/8 px-4 py-2 rounded-lg border border-white/12">{selectedFile.name}</div>
-                        ) : (
-                          <>
-                            <p className="text-white/70 font-bold mb-1">Click to browse or drag & drop</p>
-                            <p className="text-sm text-white/35">Any valid source archive (.zip, .py, .js, .ts)</p>
-                          </>
-                        )}
+                      <div className="absolute bottom-2 right-3 text-[10px] text-white/20 font-mono pointer-events-none">
+                        {sourceCode.split("\n").length} lines
                       </div>
                     </div>
+                    <p className="text-xs text-white/30">Paste your bot code above. Dependencies are auto-detected from your imports.</p>
                   </div>
                 </div>
 
