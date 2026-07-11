@@ -34,7 +34,7 @@ import { format } from "date-fns";
 import { SiPython, SiJavascript, SiTypescript } from "react-icons/si";
 import { FaJava } from "react-icons/fa";
 import { BsCodeSlash } from "react-icons/bs";
-import Editor from "@monaco-editor/react";
+import CodeInput from "@/components/CodeInput";
 
 const LANG_OPTIONS = [
   { id: BotInputLanguage.python,     name: "Python",     Icon: SiPython,     ext: "py" },
@@ -724,37 +724,7 @@ export default function Dashboard() {
 
                       <div className="space-y-2 md:col-span-2">
                         <Label className="text-white/60 font-bold text-sm">Source Code</Label>
-                        <div className="rounded-xl overflow-hidden transition-colors" style={{ border: "1px solid rgba(255,255,255,0.1)", background: "#0a0a0d" }}>
-                          <div className="flex items-center gap-1.5 px-4 py-2 border-b border-white/7" style={{ background: "rgba(255,255,255,0.02)" }}>
-                            <div className="w-2 h-2 rounded-full bg-red-500/30" />
-                            <div className="w-2 h-2 rounded-full bg-yellow-500/25" />
-                            <div className="w-2 h-2 rounded-full bg-green-500/25" />
-                            <span className="ml-2 text-[10px] text-white/22 font-mono tracking-widest uppercase">
-                              {LANG_OPTIONS.find(l => l.id === newBotLanguage)?.name.toLowerCase() ?? "bot"}.{LANG_OPTIONS.find(l => l.id === newBotLanguage)?.ext ?? "txt"}
-                            </span>
-                          </div>
-                          <Editor
-                            height="240px"
-                            language={LANG_MONACO[newBotLanguage] ?? "plaintext"}
-                            value={sourceCode}
-                            onChange={v => setSourceCode(v ?? "")}
-                            theme="vs-dark"
-                            options={{
-                              fontSize: 13,
-                              minimap: { enabled: false },
-                              scrollBeyondLastLine: false,
-                              lineNumbers: "on",
-                              renderLineHighlight: "gutter",
-                              fontFamily: "'Spline Sans Mono', 'Fira Code', monospace",
-                              padding: { top: 10, bottom: 10 },
-                              cursorBlinking: "expand",
-                              cursorStyle: "line",
-                              suggestOnTriggerCharacters: true,
-                              formatOnType: true,
-                              wordWrap: "on",
-                            }}
-                          />
-                        </div>
+                        <CodeInput value={sourceCode} onChange={setSourceCode} height="260px" />
                         <p className="text-xs text-white/25">Dependencies are auto-detected from your imports.</p>
                       </div>
                     </div>
