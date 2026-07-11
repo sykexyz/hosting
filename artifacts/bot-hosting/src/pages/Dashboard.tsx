@@ -44,6 +44,11 @@ const LANG_MODULES: Record<string, string[]> = {
   other:      ["core.runtime", "io.module", "net.module", "sys.module", "util.module"],
 };
 
+function formatBotStatus(status: string): string {
+  // Rebrand the "running" state as "Online" in the UI without touching the underlying status value.
+  return status === 'running' ? 'Online' : status;
+}
+
 function formatBytes(bytes: number | null | undefined): string {
   if (bytes === null || bytes === undefined) return "—";
   if (bytes < 1024) return `${bytes} B`;
@@ -206,7 +211,7 @@ function BotDetailsModal({ botId, onClose }: { botId: number; onClose: () => voi
                   { label: "Status", value: (
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${bot.status === 'running' ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-white/20'}`}></div>
-                      <span className="capitalize">{bot.status}</span>
+                      <span className="capitalize">{formatBotStatus(bot.status)}</span>
                     </div>
                   )},
                   { label: "Language", value: <span className="capitalize">{bot.language}</span> },
@@ -632,7 +637,7 @@ export default function Dashboard() {
                         {/* Status badge */}
                         <div className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 border ${isRunning ? 'border-white/25 text-white/90 bg-white/5' : 'border-white/10 text-white/35'}`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)]' : 'bg-white/25'}`} />
-                          {bot.status}
+                          {formatBotStatus(bot.status)}
                         </div>
                         <div className="w-8 h-8 rounded-full border border-white/12 flex items-center justify-center bg-white/[0.03]">
                           <LangIcon size={15} color="rgba(255,255,255,0.6)" />
