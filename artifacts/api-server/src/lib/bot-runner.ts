@@ -48,6 +48,17 @@ function installPython(packages: string[], dir: string): void {
   });
 }
 
+// This server's own package.json declares "type": "module", which Node applies to
+// ANY plain .js file it loads unless overridden — including hosted bot files. Most
+// copy-pasted Discord/Telegram bot code uses CommonJS (`require(...)`), which then
+// crashes immediately with "ReferenceError: require is not defined in ES module
+// scope". Detect the bot's actual module style from its own source and run it with
+// an unambiguous extension (.cjs / .mjs) so Node picks the right mode regardless of
+// this server's own package.json.
+function isEsmSource(source: string): boolean {
+  return /^\s*(import\s[^(]|export\s(default\s|const\s|function\s|class\s|\{))/m.test(source);
+}
+
 function installNode(packages: string[], dir: string): void {
   if (packages.length === 0) return;
   const pkgJson = path.join(dir, "package.json");
@@ -109,8 +120,13 @@ export async function startBot(
     cmd = fs.existsSync(venvPy) ? venvPy : "python3";
     args = [filePath];
   } else if (language === "javascript") {
+    // Run from a copy with an explicit .cjs/.mjs extension so Node's module
+    // resolution is unambiguous, independent of this server's own package.json.
+    const runExt = isEsmSource(source) ? ".mjs" : ".cjs";
+    const runPath = path.join(dir, `bot${runExt}`);
+    fs.copyFileSync(filePath, runPath);
     cmd = "node";
-    args = [filePath];
+    args = [runPath];
     env["NODE_PATH"] = path.join(dir, "node_modules");
   } else if (language === "typescript") {
     // Prefer tsx (faster, no compile step); fall back to ts-node

@@ -71,6 +71,7 @@ const PYTHON_IMPORT_TO_PACKAGE: Record<string, string> = {
   win32api: "pywin32",
   gi: "PyGObject",
   telebot: "pyTelegramBotAPI",
+  telegram: "python-telegram-bot",
   flask_sqlalchemy: "Flask-SQLAlchemy",
   flask_cors: "Flask-Cors",
   google: "google-generativeai",
