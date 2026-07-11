@@ -291,19 +291,16 @@ export default function Dashboard() {
       {
         onSuccess: async (createdBot) => {
           const fileName = selectedFile.name;
-          const steps = LANG_MODULES[newBotLanguage] ?? LANG_MODULES.other!;
-
-          // Start animation
-          uploadDoneRef.current = null;
-          setUploadPhase({ kind: "loading", fileName, steps, stepIdx: 0 });
           setIsDeploying(false);
           setNewBotName("");
           setSelectedFile(null);
           if (fileInputRef.current) fileInputRef.current.value = "";
 
-          // Upload in background
+          // Upload the file first, then get real detected packages from the response
           const formData = new FormData();
           formData.append("file", selectedFile);
+          let detectedPackages: string[] = [];
+          let uploadError: string | undefined;
           try {
             const res = await fetch(`${import.meta.env.BASE_URL}api/bots/${createdBot.id}/upload`, {
               method: "POST",
@@ -312,13 +309,28 @@ export default function Dashboard() {
             });
             if (!res.ok) {
               const body = await res.json().catch(() => ({})) as { error?: string };
-              uploadDoneRef.current = { ok: false, error: body.error ?? "Upload failed" };
+              uploadError = body.error ?? "Upload failed";
             } else {
-              uploadDoneRef.current = { ok: true };
+              const body = await res.json().catch(() => ({})) as { detectedPackages?: string[] };
+              detectedPackages = body.detectedPackages ?? [];
             }
           } catch (err: any) {
-            uploadDoneRef.current = { ok: false, error: err?.message ?? "Upload failed" };
+            uploadError = err?.message ?? "Upload failed";
           }
+
+          if (uploadError) {
+            setUploadPhase({ kind: "error", message: uploadError });
+            return;
+          }
+
+          // Use real detected packages; fall back to language defaults if none found
+          const steps = detectedPackages.length > 0
+            ? detectedPackages
+            : (LANG_MODULES[newBotLanguage] ?? LANG_MODULES.other!);
+
+          // Now start the animation — upload is already done
+          uploadDoneRef.current = { ok: true };
+          setUploadPhase({ kind: "loading", fileName, steps, stepIdx: 0 });
         },
         onError: (err) => {
           toast({ title: "Provisioning failed", description: err.data?.error || "Failed to create slot", variant: "destructive" });

@@ -5,6 +5,8 @@ import { CreateBotBody } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 import { upload } from "../lib/uploads";
 import { logActivity } from "../lib/activity-log";
+import { detectPackages } from "../lib/dep-detector";
+import { startBot, stopBot, isBotRunning } from "../lib/bot-runner";
 
 const router: IRouter = Router();
 
@@ -126,39 +128,49 @@ router.post(
       return;
     }
 
-    logActivity(`Source uploaded for bot "${bot.name}"`).catch(() => {});
-    res.json(serializeBot(updated));
+    // Detect packages from the uploaded source so the frontend can animate them
+    let detectedPackages: string[] = [];
+    try {
+      const source = fs.readFileSync(req.file.path, "utf-8");
+      detectedPackages = detectPackages(bot.language, source);
+    } catch { /* non-fatal */ }
+
+    logActivity(`Source uploaded for bot "${bot.name}" (${detectedPackages.length} deps detected)`).catch(() => {});
+    res.json({ ...serializeBot(updated), detectedPackages });
   },
 );
 
 router.post("/bots/:id/start", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const bot = await store.bots.findByIdAndUserId(id, req.userId!);
-  if (!bot) {
-    res.status(404).json({ error: "Bot not found" });
-    return;
-  }
-
-  if (!bot.fileName) {
+  if (!bot) { res.status(404).json({ error: "Bot not found" }); return; }
+  if (!bot.filePath || !bot.fileName) {
     res.status(400).json({ error: "Upload a source file before starting this bot" });
     return;
   }
+  if (!fs.existsSync(bot.filePath)) {
+    res.status(400).json({ error: "Source file not found on server — please re-upload" });
+    return;
+  }
 
-  const updated = await store.bots.update(id, { status: "running" });
-  logActivity(`Bot "${bot.name}" started`).catch(() => {});
-  res.json(serializeBot(updated ?? bot));
+  try {
+    const { packages } = await startBot(id, bot.name, bot.language, bot.filePath);
+    const updated = await store.bots.update(id, { status: "running" });
+    res.json({ ...serializeBot(updated ?? bot), installedPackages: packages });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await store.bots.update(id, { status: "stopped" });
+    res.status(500).json({ error: `Failed to start bot: ${msg}` });
+  }
 });
 
 router.post("/bots/:id/stop", requireAuth, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const bot = await store.bots.findByIdAndUserId(id, req.userId!);
-  if (!bot) {
-    res.status(404).json({ error: "Bot not found" });
-    return;
-  }
+  if (!bot) { res.status(404).json({ error: "Bot not found" }); return; }
 
+  await stopBot(id, bot.name);
   const updated = await store.bots.update(id, { status: "stopped" });
-  logActivity(`Bot "${bot.name}" stopped`).catch(() => {});
   res.json(serializeBot(updated ?? bot));
 });
 
