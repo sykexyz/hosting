@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import path from "node:path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -47,5 +48,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve the bot-hosting frontend (built into dist/public during `pnpm run build`).
+// In dev this directory won't exist — that's fine, the frontend uses its own Vite server.
+const publicDir = path.join(globalThis.__dirname ?? "dist", "public");
+app.use(express.static(publicDir));
+
+// SPA fallback — any non-API path gets index.html so client-side routing works.
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(publicDir, "index.html"), (err) => {
+    if (err) next(); // no index.html in dev — just 404
+  });
+});
 
 export default app;

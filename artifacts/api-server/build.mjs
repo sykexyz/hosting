@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp } from "node:fs/promises";
+import { execSync } from "node:child_process";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -121,7 +122,29 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   });
 }
 
-buildAll().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+async function buildFrontend() {
+  const repoRoot = path.resolve(artifactDir, "../..");
+  const frontendDist = path.resolve(artifactDir, "../bot-hosting/dist/public");
+
+  console.log("⚡ Building frontend (bot-hosting)…");
+  execSync("pnpm --filter @workspace/bot-hosting run build", {
+    stdio: "inherit",
+    cwd: repoRoot,
+    env: {
+      ...process.env,
+      // No VITE_API_URL — same origin, so relative /api/... paths work.
+      VITE_API_URL: "",
+    },
+  });
+
+  const publicDir = path.resolve(artifactDir, "dist/public");
+  await cp(frontendDist, publicDir, { recursive: true });
+  console.log(`✓ Frontend copied to dist/public`);
+}
+
+buildAll()
+  .then(buildFrontend)
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
