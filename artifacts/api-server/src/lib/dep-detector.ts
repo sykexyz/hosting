@@ -47,19 +47,52 @@ function normaliseNodePkg(raw: string): string | null {
   return name.split("/")[0] ?? null;
 }
 
+// Python import root name → real PyPI package name, for cases where they differ.
+// This matters a lot for bot hosting: `import discord` must install "discord.py",
+// NOT the unrelated abandoned "discord" package on PyPI — installing the wrong
+// one is a silent failure that looks like a working install but breaks the bot.
+const PYTHON_IMPORT_TO_PACKAGE: Record<string, string> = {
+  discord: "discord.py",
+  cv2: "opencv-python",
+  PIL: "Pillow",
+  Image: "Pillow",
+  yaml: "PyYAML",
+  bs4: "beautifulsoup4",
+  sklearn: "scikit-learn",
+  dotenv: "python-dotenv",
+  dateutil: "python-dateutil",
+  Crypto: "pycryptodome",
+  Cryptodome: "pycryptodomex",
+  nacl: "PyNaCl",
+  jwt: "PyJWT",
+  attr: "attrs",
+  serial: "pyserial",
+  usb: "pyusb",
+  win32api: "pywin32",
+  gi: "PyGObject",
+  telebot: "pyTelegramBotAPI",
+  flask_sqlalchemy: "Flask-SQLAlchemy",
+  flask_cors: "Flask-Cors",
+  google: "google-generativeai",
+};
+
+function normalisePythonPkg(root: string): string {
+  return PYTHON_IMPORT_TO_PACKAGE[root] ?? root;
+}
+
 export function detectPythonPackages(source: string): string[] {
   const pkgs = new Set<string>();
 
   // import X  /  import X.Y.Z  /  import X as Y
   for (const m of source.matchAll(/^\s*import\s+([\w.]+)/gm)) {
     const root = m[1]!.split(".")[0]!;
-    if (!PYTHON_STDLIB.has(root)) pkgs.add(root);
+    if (!PYTHON_STDLIB.has(root)) pkgs.add(normalisePythonPkg(root));
   }
 
   // from X import ...
   for (const m of source.matchAll(/^\s*from\s+([\w.]+)\s+import/gm)) {
     const root = m[1]!.split(".")[0]!;
-    if (!PYTHON_STDLIB.has(root)) pkgs.add(root);
+    if (!PYTHON_STDLIB.has(root)) pkgs.add(normalisePythonPkg(root));
   }
 
   return [...pkgs];

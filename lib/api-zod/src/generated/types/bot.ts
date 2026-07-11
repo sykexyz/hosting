@@ -16,5 +16,7 @@ export interface Bot {
   status: BotStatus;
   /** @nullable */
   fileName: string | null;
+  /** @nullable */
+  fileSizeBytes?: number | null;
   createdAt: string;
 }

@@ -21,6 +21,7 @@ import type {
 
 import type {
   AdminBot,
+  AdminBotSource,
   AdminLoginInput,
   AdminSession,
   AdminUser,
@@ -1377,6 +1378,83 @@ export function useDownloadAdminBotFile<TData = Awaited<ReturnType<typeof downlo
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getDownloadAdminBotFileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getViewAdminBotSourceUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/bots/${id}/source`
+}
+
+/**
+ * @summary View a hosted bot's source code as plain text (for copying)
+ */
+export const viewAdminBotSource = async (id: number, options?: RequestInit): Promise<AdminBotSource> => {
+
+  return customFetch<AdminBotSource>(getViewAdminBotSourceUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getViewAdminBotSourceQueryKey = (id: number,) => {
+    return [
+    `/api/admin/bots/${id}/source`
+    ] as const;
+    }
+
+
+export const getViewAdminBotSourceQueryOptions = <TData = Awaited<ReturnType<typeof viewAdminBotSource>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof viewAdminBotSource>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getViewAdminBotSourceQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof viewAdminBotSource>>> = ({ signal }) => viewAdminBotSource(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof viewAdminBotSource>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ViewAdminBotSourceQueryResult = NonNullable<Awaited<ReturnType<typeof viewAdminBotSource>>>
+export type ViewAdminBotSourceQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary View a hosted bot's source code as plain text (for copying)
+ */
+
+export function useViewAdminBotSource<TData = Awaited<ReturnType<typeof viewAdminBotSource>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof viewAdminBotSource>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getViewAdminBotSourceQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

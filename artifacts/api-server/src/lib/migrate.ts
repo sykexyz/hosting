@@ -30,6 +30,8 @@ export async function ensureSchema(): Promise<void> {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
+      ALTER TABLE bots ADD COLUMN IF NOT EXISTS file_size_bytes INTEGER;
+
       CREATE TABLE IF NOT EXISTS logs (
         id SERIAL PRIMARY KEY,
         message TEXT NOT NULL,

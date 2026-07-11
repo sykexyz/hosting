@@ -40,6 +40,11 @@ function installPython(packages: string[], dir: string): void {
   execSync(`"${pip}" install --quiet ${packages.map(p => JSON.stringify(p)).join(" ")}`, {
     timeout: 180_000,
     stdio: "pipe",
+    // The workspace's global pip.conf forces `user = yes`, which is meant for the
+    // main Replit Python env. Inside a per-bot venv, "--user" installs are invalid
+    // ("User site-packages are not visible in this virtualenv") and install silently
+    // fails. Override it here so installs actually land in the venv.
+    env: { ...process.env, PIP_CONFIG_FILE: "", PIP_USER: "0" },
   });
 }
 

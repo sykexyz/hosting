@@ -102,6 +102,8 @@ export interface Bot {
   status: BotStatus;
   /** @nullable */
   fileName: string | null;
+  /** @nullable */
+  fileSizeBytes?: number | null;
   createdAt: string;
 }
 
@@ -129,6 +131,8 @@ export interface AdminBot {
   status: string;
   /** @nullable */
   fileName: string | null;
+  /** @nullable */
+  fileSizeBytes?: number | null;
   createdAt: string;
   ownerEmail: string;
   ownerUsername: string;
@@ -139,5 +143,10 @@ export interface LogEntry {
   id: number;
   message: string;
   createdAt: string;
+}
+
+export interface AdminBotSource {
+  fileName: string;
+  content: string;
 }
 

@@ -43,6 +43,13 @@ const LANG_MODULES: Record<string, string[]> = {
   other:      ["core.runtime", "io.module", "net.module", "sys.module", "util.module"],
 };
 
+function formatBytes(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 /* ── Upload animation overlay ── */
 type UploadPhase =
   | { kind: "idle" }
@@ -167,7 +174,8 @@ function BotDetailsModal({ botId, onClose }: { botId: number; onClose: () => voi
                   )},
                   { label: "Language", value: <span className="capitalize">{bot.language}</span> },
                   { label: "RAM",      value: `${bot.ramMb} MB` },
-                  { label: "Storage",  value: `${bot.storageMb} MB` },
+                  { label: "Storage Plan",  value: `${bot.storageMb} MB` },
+                  { label: "Source Size",  value: formatBytes(bot.fileSizeBytes) },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-white/4 p-4 rounded-xl border border-white/8">
                     <div className="text-xs text-white/40 uppercase tracking-widest mb-2 font-bold">{label}</div>
@@ -200,8 +208,9 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   const { data: user, error: userError, isLoading: loadingUser } = useGetCurrentUser();
-  const { data: bots, isLoading: loadingBots } = useListBots();
-  const { data: summary, isLoading: loadingSummary } = useGetBotSummary();
+  // Poll so status/specs reflect real process state (e.g. a bot crashing) without a manual refresh.
+  const { data: bots, isLoading: loadingBots } = useListBots({ query: { refetchInterval: 3000 } as any });
+  const { data: summary, isLoading: loadingSummary } = useGetBotSummary({ query: { refetchInterval: 3000 } as any });
 
   const logout   = useLogout();
   const createBot = useCreateBot();
@@ -605,8 +614,8 @@ export default function Dashboard() {
                           <div className="text-white/80 font-bold text-sm">{bot.ramMb} MB</div>
                         </div>
                         <div>
-                          <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Storage</div>
-                          <div className="text-white/80 font-bold text-sm">{bot.storageMb} MB</div>
+                          <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Src Size</div>
+                          <div className="text-white/80 font-bold text-sm">{formatBytes(bot.fileSizeBytes)}</div>
                         </div>
                         <div className="ml-auto">
                           <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">File</div>

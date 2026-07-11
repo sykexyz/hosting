@@ -20,6 +20,7 @@ function serializeBot(bot: Bot) {
     storageMb: bot.storageMb,
     status: bot.status,
     fileName: bot.fileName,
+    fileSizeBytes: bot.fileSizeBytes,
     createdAt: bot.createdAt,
   };
 }
@@ -54,6 +55,7 @@ router.post("/bots", requireAuth, async (req, res): Promise<void> => {
     status: "stopped",
     fileName: null,
     filePath: null,
+    fileSizeBytes: null,
   });
 
   logActivity(`Bot slot "${bot.name}" created`).catch(() => {});
@@ -122,6 +124,7 @@ router.post(
     const updated = await store.bots.update(bot.id, {
       fileName: req.file.originalname,
       filePath: req.file.path,
+      fileSizeBytes: req.file.size,
     });
 
     if (!updated) { res.status(404).json({ error: "Bot not found" }); return; }
@@ -165,8 +168,9 @@ router.post("/bots/:id/source", requireAuth, requireOwnedBot, async (req, res): 
   }
 
   fs.writeFileSync(filePath, code, "utf-8");
+  const fileSizeBytes = Buffer.byteLength(code, "utf-8");
 
-  const updated = await store.bots.update(bot.id, { fileName: name, filePath });
+  const updated = await store.bots.update(bot.id, { fileName: name, filePath, fileSizeBytes });
   if (!updated) { res.status(404).json({ error: "Bot not found" }); return; }
 
   const detectedPackages = detectPackages(bot.language, code);

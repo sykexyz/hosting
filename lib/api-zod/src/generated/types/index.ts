@@ -7,6 +7,7 @@
  */
 
 export * from './adminBot';
+export * from './adminBotSource';
 export * from './adminLoginInput';
 export * from './adminSession';
 export * from './adminUser';

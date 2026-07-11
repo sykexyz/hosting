@@ -21,6 +21,7 @@ export const botsTable = pgTable("bots", {
   status: text("status").notNull().default("stopped"),
   fileName: text("file_name"),
   filePath: text("file_path"),
+  fileSizeBytes: integer("file_size_bytes"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -83,6 +83,7 @@ router.get("/admin/bots", requireAdmin, async (_req, res): Promise<void> => {
       storageMb: b.storageMb,
       status: b.status,
       fileName: b.fileName,
+      fileSizeBytes: b.fileSizeBytes,
       createdAt: b.createdAt,
       ownerEmail: owner?.email ?? "unknown",
       ownerUsername: owner?.username ?? "unknown",
@@ -120,6 +121,20 @@ router.get("/admin/bots/:id/download", requireAdmin, async (req, res): Promise<v
   }
 
   res.download(path.resolve(bot.filePath), bot.fileName ?? `bot-${bot.id}`);
+});
+
+// View a bot's source as plain text so admin can read/copy it directly in the panel.
+router.get("/admin/bots/:id/source", requireAdmin, async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const bot = await store.bots.findById(id);
+
+  if (!bot || !bot.filePath || !fs.existsSync(bot.filePath)) {
+    res.status(404).json({ error: "File not found" });
+    return;
+  }
+
+  const content = fs.readFileSync(bot.filePath, "utf-8");
+  res.json({ fileName: bot.fileName ?? `bot-${bot.id}`, content });
 });
 
 router.get("/admin/logs", requireAdmin, async (_req, res): Promise<void> => {

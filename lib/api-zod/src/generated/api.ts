@@ -87,6 +87,7 @@ export const ListBotsResponseItem = zod.object({
   "storageMb": zod.number(),
   "status": zod.enum(['stopped', 'running']),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string()
 })
 export const ListBotsResponse = zod.array(ListBotsResponseItem)
@@ -113,6 +114,7 @@ export const CreateBotResponse = zod.object({
   "storageMb": zod.number(),
   "status": zod.enum(['stopped', 'running']),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -143,6 +145,7 @@ export const GetBotResponse = zod.object({
   "storageMb": zod.number(),
   "status": zod.enum(['stopped', 'running']),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -172,6 +175,7 @@ export const StartBotResponse = zod.object({
   "storageMb": zod.number(),
   "status": zod.enum(['stopped', 'running']),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -191,6 +195,7 @@ export const StopBotResponse = zod.object({
   "storageMb": zod.number(),
   "status": zod.enum(['stopped', 'running']),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -238,6 +243,7 @@ export const ListAdminBotsResponseItem = zod.object({
   "storageMb": zod.number(),
   "status": zod.string(),
   "fileName": zod.string().nullable(),
+  "fileSizeBytes": zod.number().nullish(),
   "createdAt": zod.string(),
   "ownerEmail": zod.string(),
   "ownerUsername": zod.string(),
@@ -264,6 +270,19 @@ export const DownloadAdminBotFileParams = zod.object({
 })
 
 export const DownloadAdminBotFileResponse = zod.unknown()
+
+
+/**
+ * @summary View a hosted bot's source code as plain text (for copying)
+ */
+export const ViewAdminBotSourceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ViewAdminBotSourceResponse = zod.object({
+  "fileName": zod.string(),
+  "content": zod.string()
+})
 
 
 /**

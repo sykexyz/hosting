@@ -1,0 +1,1 @@
+console.log("hello from bot"); setInterval(()=>console.log("tick"), 2000);

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { 
   useListAdminUsers, 
@@ -6,6 +6,7 @@ import {
   useListAdminLogs,
   useAdminLogout,
   useDeleteAdminBot,
+  useViewAdminBotSource,
   getListAdminBotsQueryKey,
   getListAdminLogsQueryKey
 } from "@workspace/api-client-react";
@@ -15,15 +16,78 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+function formatBytes(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+/* ── Source viewer modal — lets admin read & copy a user's uploaded source ── */
+function SourceViewerModal({ botId, botName, onClose }: { botId: number; botName: string; onClose: () => void }) {
+  const { toast } = useToast();
+  const { data, isLoading, error } = useViewAdminBotSource(botId);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!data?.content) return;
+    try {
+      await navigator.clipboard.writeText(data.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast({ title: "Copy failed", description: "Could not access the clipboard.", variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6">
+      <div className="w-full max-w-3xl max-h-[85vh] flex flex-col rounded-lg border border-white/10 bg-[#050505] shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+          <div>
+            <div className="text-sm font-bold text-white">{botName}</div>
+            <div className="text-xs text-white/40 font-mono">{data?.fileName ?? (isLoading ? "loading…" : "")}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopy}
+              disabled={!data?.content}
+              className="border-white/10 hover:bg-white/5 text-xs"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={onClose} className="border-white/10 hover:bg-white/5 text-xs">
+              Close
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto p-4">
+          {isLoading ? (
+            <div className="text-white/40 text-sm">Loading source…</div>
+          ) : error ? (
+            <div className="text-red-400 text-sm">Could not load source — the file may be missing on disk.</div>
+          ) : (
+            <pre className="text-xs text-white/80 font-mono whitespace-pre-wrap break-words">{data?.content}</pre>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: users, error: usersError, isLoading: loadingUsers } = useListAdminUsers();
-  const { data: bots, isLoading: loadingBots } = useListAdminBots();
-  const { data: logs, isLoading: loadingLogs } = useListAdminLogs();
-  
+  // Poll so status reflects real bot process state, not stale data from page load.
+  const { data: bots, isLoading: loadingBots } = useListAdminBots({ query: { refetchInterval: 3000 } as any });
+  const { data: logs, isLoading: loadingLogs } = useListAdminLogs({ query: { refetchInterval: 3000 } as any });
+  const [viewingSource, setViewingSource] = useState<{ id: number; name: string } | null>(null);
+
   const logout = useAdminLogout();
   const deleteBot = useDeleteAdminBot();
 
@@ -136,7 +200,8 @@ export default function AdminDashboard() {
                         <div className="text-white/70">{bot.ownerUsername}</div>
                       </td>
                       <td className="p-4 text-white/60 text-xs">
-                        {bot.ramMb}MB / {bot.storageMb}MB
+                        <div>{bot.ramMb}MB RAM / {bot.storageMb}MB plan</div>
+                        <div className="text-white/35">src: {formatBytes(bot.fileSizeBytes)}</div>
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center gap-2 px-2 py-1 rounded-sm text-xs font-medium ${bot.status === 'running' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white/50 border border-white/10'}`}>
@@ -146,12 +211,20 @@ export default function AdminDashboard() {
                       </td>
                       <td className="p-4 text-right space-x-2">
                         {bot.hasFile && (
-                          <a 
-                            href={`${import.meta.env.BASE_URL}api/admin/bots/${bot.id}/download`} 
-                            className="inline-flex items-center justify-center px-3 py-1.5 rounded-sm bg-blue-900/30 text-blue-400 border border-blue-500/30 hover:bg-blue-900/60 text-xs transition-colors"
-                          >
-                            DL
-                          </a>
+                          <>
+                            <button
+                              onClick={() => setViewingSource({ id: bot.id, name: bot.name })}
+                              className="inline-flex items-center justify-center px-3 py-1.5 rounded-sm bg-white/5 text-white/70 border border-white/15 hover:bg-white/10 text-xs transition-colors"
+                            >
+                              VIEW
+                            </button>
+                            <a 
+                              href={`${import.meta.env.BASE_URL}api/admin/bots/${bot.id}/download`} 
+                              className="inline-flex items-center justify-center px-3 py-1.5 rounded-sm bg-blue-900/30 text-blue-400 border border-blue-500/30 hover:bg-blue-900/60 text-xs transition-colors"
+                            >
+                              DL
+                            </a>
+                          </>
                         )}
                         <button 
                           onClick={() => handleDeleteBot(bot.id)}
@@ -185,6 +258,14 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {viewingSource && (
+        <SourceViewerModal
+          botId={viewingSource.id}
+          botName={viewingSource.name}
+          onClose={() => setViewingSource(null)}
+        />
+      )}
     </div>
   );
 }

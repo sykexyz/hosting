@@ -1,1 +1,3 @@
 - [Railway deployment fix](railway-deployment.md) — migrated from ephemeral JSON store to PostgreSQL; startup migration ensures tables exist; Railway needs DATABASE_URL, FRONTEND_URL, VITE_API_URL.
+- [Bot-hosting sandbox pip installs](bot-hosting-pip-venv.md) — Replit's global pip.conf forces `--user`, which breaks any `pip install` run inside a per-project venv.
+- [Python/npm package name detection](python-import-package-mapping.md) — mapping raw import names straight to PyPI package names is wrong for common libs (discord, cv2, PIL, yaml, etc.) and silently installs the wrong package.

@@ -15,6 +15,8 @@ export interface AdminBot {
   status: string;
   /** @nullable */
   fileName: string | null;
+  /** @nullable */
+  fileSizeBytes?: number | null;
   createdAt: string;
   ownerEmail: string;
   ownerUsername: string;
