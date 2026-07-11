@@ -32,7 +32,9 @@ function findPython3(): string {
   for (const bin of candidates) {
     try {
       const result = spawnSync(bin, ["--version"], { timeout: 5_000, encoding: "utf8" });
-      if (result.status === 0 && result.stdout) {
+      // python3 --version prints to stdout on 3.4+, but to stderr on some older builds.
+      // Accept either: just confirm the process exited 0.
+      if (result.status === 0 && (result.stdout || result.stderr)) {
         _python3 = bin;
         return bin;
       }

@@ -42,3 +42,8 @@ description: Migration from JSON store to PostgreSQL, CORS resolution, and real 
 ## How to apply
 - Railway needs one redeploy of the api-server after each push (auto-deploy if GitHub integration enabled)
 - Neon.tech free PostgreSQL recommended over Railway internal PostgreSQL (simpler setup)
+
+## Python3 on Railway — use Dockerfile, NOT nixpacks.toml
+nixpacks.toml with `nixPkgs = ["python3",...]` does NOT reliably put python3 in PATH at runtime on Railway.
+**Fix**: `Dockerfile` at repo root uses `apt-get install python3 python3-pip python3-venv` — Railway auto-detects it and uses Docker instead of Nixpacks, guaranteeing python3 availability.
+Also added `findPython3()` in bot-runner.ts: probes python3/python/python3.12... candidates, checks both stdout AND stderr (`--version` prints to stderr on older Python builds), falls back to `which`.
