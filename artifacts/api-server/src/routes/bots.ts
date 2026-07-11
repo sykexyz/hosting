@@ -167,8 +167,14 @@ router.post("/bots/:id/source", requireAuth, requireOwnedBot, async (req, res): 
     fs.unlinkSync(bot.filePath);
   }
 
-  fs.writeFileSync(filePath, code, "utf-8");
-  const fileSizeBytes = Buffer.byteLength(code, "utf-8");
+  // Strip BOM and normalize line endings so Python/Node never sees \r or a BOM
+  const cleanCode = code
+    .replace(/^\uFEFF/, "")       // strip UTF-8 BOM if present
+    .replace(/\r\n/g, "\n")       // CRLF → LF
+    .replace(/\r/g, "\n");        // stray CR → LF
+
+  fs.writeFileSync(filePath, cleanCode, "utf-8");
+  const fileSizeBytes = Buffer.byteLength(cleanCode, "utf-8");
 
   const updated = await store.bots.update(bot.id, { fileName: name, filePath, fileSizeBytes });
   if (!updated) { res.status(404).json({ error: "Bot not found" }); return; }
