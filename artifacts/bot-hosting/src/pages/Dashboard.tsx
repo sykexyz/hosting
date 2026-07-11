@@ -565,72 +565,100 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {bots?.map(bot => {
                 const LangIcon = LANG_OPTIONS.find(l => l.id === bot.language)?.Icon || BsCodeSlash;
+                const hasFile = !!bot.fileName;
+                const isRunning = bot.status === 'running';
                 return (
                   <Card
                     key={bot.id}
-                    className="relative overflow-hidden group hover:border-white/25 transition-all cursor-pointer glass-panel hover:shadow-[0_8px_40px_rgba(255,255,255,0.06)]"
-                    onClick={() => setDetailsBotId(bot.id)}
+                    className={`relative overflow-hidden transition-all glass-panel ${isRunning ? 'border-white/30 shadow-[0_0_24px_rgba(255,255,255,0.07)]' : 'border-white/10'}`}
                   >
-                    {bot.status === 'running' && (
-                      <div className="absolute top-0 left-0 w-full h-px bg-white/60 shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+                    {/* Running pulse line */}
+                    {isRunning && (
+                      <div className="absolute top-0 left-0 w-full h-px bg-white/60 shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                     )}
-                    <CardHeader className="pb-4 pointer-events-none">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-2 border ${bot.status === 'running' ? 'border-white/25 text-white/90' : 'border-white/10 text-white/35'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${bot.status === 'running' ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)]' : 'bg-white/25'}`}></div>
+
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start mb-3">
+                        {/* Status badge */}
+                        <div className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 border ${isRunning ? 'border-white/25 text-white/90 bg-white/5' : 'border-white/10 text-white/35'}`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)]' : 'bg-white/25'}`} />
                           {bot.status}
                         </div>
                         <div className="w-8 h-8 rounded-full border border-white/12 flex items-center justify-center bg-white/[0.03]">
                           <LangIcon size={15} color="rgba(255,255,255,0.6)" />
                         </div>
                       </div>
-                      <CardTitle className="text-lg text-white font-bold truncate">{bot.name}</CardTitle>
-                      <CardDescription className="text-xs text-white/35 font-medium">
-                        Deployed {format(new Date(bot.createdAt), 'MMM d, yyyy')}
+                      <CardTitle className="text-base text-white font-bold truncate">{bot.name}</CardTitle>
+                      <CardDescription className="text-xs text-white/35">
+                        {format(new Date(bot.createdAt), 'MMM d, yyyy')}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="pb-6 pointer-events-none border-b border-white/6">
-                      <div className="flex items-center gap-8 mt-1 bg-white/[0.03] p-3 rounded-xl border border-white/8">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-white/30 uppercase tracking-widest mb-1 font-bold">RAM</span>
-                          <span className="text-white/80 font-bold text-sm">{bot.ramMb} MB</span>
+
+                    <CardContent className="pb-3">
+                      {/* Resource row */}
+                      <div className="flex items-center gap-6 bg-white/[0.03] px-3 py-2.5 rounded-xl border border-white/8 mb-4">
+                        <div>
+                          <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">RAM</div>
+                          <div className="text-white/80 font-bold text-sm">{bot.ramMb} MB</div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-white/30 uppercase tracking-widest mb-1 font-bold">Storage</span>
-                          <span className="text-white/80 font-bold text-sm">{bot.storageMb} MB</span>
+                        <div>
+                          <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Storage</div>
+                          <div className="text-white/80 font-bold text-sm">{bot.storageMb} MB</div>
+                        </div>
+                        <div className="ml-auto">
+                          <div className="text-[9px] text-white/30 uppercase tracking-widest font-bold mb-0.5">File</div>
+                          <div className={`text-xs font-mono truncate max-w-[90px] ${hasFile ? 'text-white/70' : 'text-white/25 italic'}`}>
+                            {hasFile ? bot.fileName : 'none'}
+                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                    <div
-                      className="absolute bottom-0 left-0 w-full p-4 bg-black/80 backdrop-blur-md border-t border-white/8 flex gap-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {bot.status === 'stopped' ? (
-                        <button
-                          className="flex-1 btn-3d py-2 font-bold text-sm text-white/80 hover:text-white"
-                          onClick={() => handleAction(bot.id, 'start')}
-                          disabled={startBot.isPending}
-                        >
-                          Start
-                        </button>
-                      ) : (
-                        <button
-                          className="flex-1 btn-3d py-2 font-bold text-sm text-white/70 hover:text-white"
-                          onClick={() => handleAction(bot.id, 'stop')}
-                          disabled={stopBot.isPending}
-                        >
-                          Halt
-                        </button>
+
+                      {/* No file warning */}
+                      {!hasFile && (
+                        <div className="text-xs text-amber-400/70 bg-amber-400/5 border border-amber-400/15 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                          Upload a source file before starting
+                        </div>
                       )}
+
+                      {/* Action buttons — always visible */}
+                      <div className="flex gap-2">
+                        {!isRunning ? (
+                          <button
+                            className="flex-1 btn-3d py-2.5 font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                            onClick={() => handleAction(bot.id, 'start')}
+                            disabled={startBot.isPending || !hasFile}
+                            title={!hasFile ? 'Upload a file first' : 'Start bot'}
+                          >
+                            {startBot.isPending ? '...' : '▶ Start'}
+                          </button>
+                        ) : (
+                          <button
+                            className="flex-1 btn-3d py-2.5 font-bold text-sm text-white/70 hover:text-white disabled:opacity-40"
+                            onClick={() => handleAction(bot.id, 'stop')}
+                            disabled={stopBot.isPending}
+                          >
+                            {stopBot.isPending ? '...' : '■ Stop'}
+                          </button>
+                        )}
+                        <button
+                          className="btn-3d btn-3d-destructive px-4 py-2.5"
+                          onClick={() => handleAction(bot.id, 'delete')}
+                          disabled={deleteBot.isPending}
+                          title="Delete bot"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                      </div>
+
+                      {/* Info link */}
                       <button
-                        className="btn-3d btn-3d-destructive px-4"
-                        onClick={() => handleAction(bot.id, 'delete')}
-                        disabled={deleteBot.isPending}
-                        aria-label="Delete"
+                        className="w-full text-center text-xs text-white/20 hover:text-white/40 mt-2 py-1 transition-colors"
+                        onClick={() => setDetailsBotId(bot.id)}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                        View details
                       </button>
-                    </div>
+                    </CardContent>
                   </Card>
                 );
               })}
