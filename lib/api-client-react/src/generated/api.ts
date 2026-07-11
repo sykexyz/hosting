@@ -946,6 +946,83 @@ export const useStopBot = <TError = ErrorType<unknown>,
       return useMutation(getStopBotMutationOptions(options));
     }
 
+export const getListBotLogsUrl = (id: number,) => {
+
+
+
+
+  return `/api/bots/${id}/logs`
+}
+
+/**
+ * @summary Real stdout/stderr/lifecycle logs for this bot (owner-visible)
+ */
+export const listBotLogs = async (id: number, options?: RequestInit): Promise<LogEntry[]> => {
+
+  return customFetch<LogEntry[]>(getListBotLogsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBotLogsQueryKey = (id: number,) => {
+    return [
+    `/api/bots/${id}/logs`
+    ] as const;
+    }
+
+
+export const getListBotLogsQueryOptions = <TData = Awaited<ReturnType<typeof listBotLogs>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBotLogs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBotLogsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBotLogs>>> = ({ signal }) => listBotLogs(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBotLogs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBotLogsQueryResult = NonNullable<Awaited<ReturnType<typeof listBotLogs>>>
+export type ListBotLogsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Real stdout/stderr/lifecycle logs for this bot (owner-visible)
+ */
+
+export function useListBotLogs<TData = Awaited<ReturnType<typeof listBotLogs>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBotLogs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBotLogsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getAdminLoginUrl = () => {
 
 

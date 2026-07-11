@@ -11,6 +11,7 @@ import {
   useStopBot,
   useDeleteBot,
   useGetBot,
+  useListBotLogs,
   getListBotsQueryKey,
   getGetBotSummaryQueryKey,
   BotInputLanguage,
@@ -139,6 +140,42 @@ function UploadOverlay({ phase, onDismiss }: { phase: Exclude<UploadPhase, { kin
   );
 }
 
+/* ── Live logs viewer (real stdout/stderr/lifecycle output for this bot) ── */
+function BotLogsPanel({ botId }: { botId: number }) {
+  const { data: logs, isLoading } = useListBotLogs(botId, { query: { refetchInterval: 3000 } as any });
+  const logEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ block: "end" });
+  }, [logs]);
+
+  return (
+    <div className="bg-black/60 border border-white/8 rounded-xl overflow-hidden">
+      <div className="px-4 py-2 border-b border-white/8 text-xs text-white/40 uppercase tracking-widest font-bold">
+        Live Console
+      </div>
+      <div className="p-3 max-h-56 overflow-y-auto font-mono text-xs space-y-1" style={{ fontFamily: "'Spline Sans Mono', monospace" }}>
+        {isLoading ? (
+          <div className="text-white/30">Loading logs...</div>
+        ) : !logs || logs.length === 0 ? (
+          <div className="text-white/30">No output yet. Start the bot to see real console output here.</div>
+        ) : (
+          logs.map((log) => {
+            const isErr = log.message.includes(" ERR]");
+            return (
+              <div key={log.id} className={isErr ? "text-red-300/90" : "text-white/70"}>
+                <span className="text-white/25">{format(new Date(log.createdAt), "HH:mm:ss")}</span>{" "}
+                {log.message}
+              </div>
+            );
+          })
+        )}
+        <div ref={logEndRef} />
+      </div>
+    </div>
+  );
+}
+
 /* ── Bot details modal ── */
 function BotDetailsModal({ botId, onClose }: { botId: number; onClose: () => void }) {
   const { data: bot, isLoading } = useGetBot(botId);
@@ -191,6 +228,7 @@ function BotDetailsModal({ botId, onClose }: { botId: number; onClose: () => voi
                 <div className="text-xs text-white/40 uppercase tracking-widest mb-2 font-bold">Provisioned</div>
                 <div className="text-white/80 font-medium">{format(new Date(bot.createdAt), 'PPP p')}</div>
               </div>
+              <BotLogsPanel botId={bot.id} />
             </div>
           ) : (
             <div className="text-center py-8 text-white/40 font-medium">Slot not found</div>

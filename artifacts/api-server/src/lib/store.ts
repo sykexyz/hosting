@@ -106,9 +106,21 @@ export const store = {
         .limit(limit);
       return rows;
     },
-    async insert(message: string): Promise<Log> {
-      const rows = await db.insert(logsTable).values({ message }).returning();
-      // Prune old logs asynchronously (keep last 500)
+    async findRecentForBot(botId: number, limit = 200): Promise<Log[]> {
+      const rows = await db
+        .select()
+        .from(logsTable)
+        .where(eq(logsTable.botId, botId))
+        .orderBy(desc(logsTable.id))
+        .limit(limit);
+      return rows;
+    },
+    async insert(message: string, botId?: number): Promise<Log> {
+      const rows = await db
+        .insert(logsTable)
+        .values({ message, botId: botId ?? null })
+        .returning();
+      // Prune old logs asynchronously (keep last 500 platform-wide + last 300 per bot)
       db.execute(
         sql`DELETE FROM ${logsTable} WHERE id NOT IN (SELECT id FROM ${logsTable} ORDER BY id DESC LIMIT 500)`
       ).catch(() => {});

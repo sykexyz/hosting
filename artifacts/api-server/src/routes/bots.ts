@@ -212,4 +212,19 @@ router.post("/bots/:id/stop", requireAuth, async (req, res): Promise<void> => {
   res.json(serializeBot(updated ?? bot));
 });
 
+// Real stdout/stderr/lifecycle logs for this bot, so the owner can see exactly why
+// it isn't behaving as expected (e.g. Telegram "terminated by other getUpdates
+// request" conflicts, invalid token errors, missing deps) instead of only seeing
+// a bare "running" status with no visibility.
+router.get("/bots/:id/logs", requireAuth, requireOwnedBot, async (req, res): Promise<void> => {
+  const bot = req.bot!;
+  const logs = await store.logs.findRecentForBot(bot.id, 200);
+  res.json(
+    logs
+      .slice()
+      .reverse()
+      .map((l) => ({ id: l.id, message: l.message, createdAt: l.createdAt })),
+  );
+});
+
 export default router;

@@ -244,6 +244,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/Bot"
 
+  /bots/{id}/logs:
+    get:
+      operationId: listBotLogs
+      tags: [bots]
+      summary: Real stdout/stderr/lifecycle logs for this bot (owner-visible)
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Log entries, oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /admin/login:
     post:
       operationId: adminLogin

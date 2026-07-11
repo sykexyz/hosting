@@ -201,6 +201,21 @@ export const StopBotResponse = zod.object({
 
 
 /**
+ * @summary Real stdout/stderr/lifecycle logs for this bot (owner-visible)
+ */
+export const ListBotLogsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListBotLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "message": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListBotLogsResponse = zod.array(ListBotLogsResponseItem)
+
+
+/**
  * @summary Admin panel login
  */
 export const AdminLoginBody = zod.object({

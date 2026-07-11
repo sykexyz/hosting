@@ -106,7 +106,7 @@ export async function startBot(
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    logActivity(`[${botName}] dep install warning: ${msg}`).catch(() => {});
+    logActivity(`[${botName}] dep install warning: ${msg}`, botId).catch(() => {});
     // Non-fatal: attempt to run anyway
   }
 
@@ -161,28 +161,28 @@ export async function startBot(
 
   proc.stdout?.on("data", (chunk: Buffer) => {
     const text = chunk.toString().trim();
-    if (text) logActivity(`[${botName}] ${text}`).catch(() => {});
+    if (text) logActivity(`[${botName}] ${text}`, botId).catch(() => {});
   });
 
   proc.stderr?.on("data", (chunk: Buffer) => {
     const text = chunk.toString().trim();
-    if (text) logActivity(`[${botName} ERR] ${text}`).catch(() => {});
+    if (text) logActivity(`[${botName} ERR] ${text}`, botId).catch(() => {});
   });
 
   proc.on("exit", (code, signal) => {
     running.delete(botId);
-    logActivity(`Bot "${botName}" exited (code=${code ?? "?"} signal=${signal ?? "-"})`).catch(() => {});
+    logActivity(`Bot "${botName}" exited (code=${code ?? "?"} signal=${signal ?? "-"})`, botId).catch(() => {});
     // Always sync DB status so UI reflects reality
     store.bots.update(botId, { status: "stopped" }).catch(() => {});
   });
 
   proc.on("error", (err) => {
     running.delete(botId);
-    logActivity(`Bot "${botName}" spawn error: ${err.message}`).catch(() => {});
+    logActivity(`Bot "${botName}" spawn error: ${err.message}`, botId).catch(() => {});
     store.bots.update(botId, { status: "stopped" }).catch(() => {});
   });
 
-  logActivity(`Bot "${botName}" started (pid=${proc.pid}, lang=${language}, deps=[${packages.join(",")}])`).catch(() => {});
+  logActivity(`Bot "${botName}" started (pid=${proc.pid}, lang=${language}, deps=[${packages.join(",")}])`, botId).catch(() => {});
   return { packages };
 }
 
@@ -206,5 +206,5 @@ export async function stopBot(
   });
 
   running.delete(botId);
-  if (!silent) logActivity(`Bot "${botName}" stopped`).catch(() => {});
+  if (!silent) logActivity(`Bot "${botName}" stopped`, botId).catch(() => {});
 }
