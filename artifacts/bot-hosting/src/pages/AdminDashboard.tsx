@@ -412,7 +412,7 @@ export default function AdminDashboard() {
           <Card className="glass-panel lg:col-span-3" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
             <CardHeader className="pb-0 px-4 pt-4 border-b border-white/7">
               <div className="flex items-center justify-between pb-3">
-                <CardTitle className="text-xs tracking-widest text-white/35 uppercase">System Logs</CardTitle>
+                <CardTitle className="text-xs tracking-widest text-white/35 uppercase">Activity Logs</CardTitle>
                 <input
                   type="text"
                   value={logSearch}
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
                 {loadingLogs ? (
                   <div className="space-y-1.5 p-1">{[...Array(6)].map((_, i) => <Skeleton key={i} className="h-4" />)}</div>
                 ) : !filteredLogs?.length ? (
-                  <div className="text-white/25 p-2">{logSearch ? "No matching logs." : "No system logs yet."}</div>
+                  <div className="text-white/25 p-2">{logSearch ? "No matching logs." : "No activity logs yet."}</div>
                 ) : (
                   filteredLogs.map((log: any) => {
                     const level = getLogLevel(log.message);

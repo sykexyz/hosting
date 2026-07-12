@@ -99,41 +99,23 @@ function UploadOverlay({ phase, onDismiss }: { phase: Exclude<UploadPhase, { kin
         style={{ background: "#07070a", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 0 60px rgba(0,0,0,0.9), 0 0 120px rgba(120,80,220,0.08)" }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8" style={{ background: "rgba(255,255,255,0.02)" }}>
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/30" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/30" />
-          <span className="ml-3 text-[10px] text-white/25 tracking-widest uppercase font-mono">system — hosting-daemon</span>
-        </div>
-        <div className="p-6 min-h-[220px] flex flex-col gap-2 crt-overlay" style={{ fontFamily: "'Spline Sans Mono', monospace" }}>
-          {phase.kind === "loading" && (
-            <>
-              <p className="text-white/40 text-xs mb-3">
-                <span className="text-green-400/70">$</span> Checking module dependencies...
-              </p>
-              {phase.steps.map((step, i) => {
-                const done = i < phase.stepIdx;
-                const active = i === phase.stepIdx;
-                if (i > phase.stepIdx) return null;
-                return (
-                  <div key={step} className="flex items-center gap-3 text-sm">
-                    {done
-                      ? <span className="text-green-400/80">✓</span>
-                      : <span className="text-white/40 animate-spin inline-block">⟳</span>}
-                    <span className={done ? "text-white/55" : active ? "text-white/90" : "text-white/25"}>
-                      {active ? (
-                        <>downloading <span className="text-white font-bold">{step}</span>
-                          <span className="inline-block ml-1 text-white/70" style={{ animation: "terminal-blink 1s step-end infinite" }}>▌</span>
-                        </>
-                      ) : (
-                        <>downloaded <span className="text-white/70">{step}</span></>
-                      )}
-                    </span>
-                  </div>
-                );
-              })}
-            </>
-          )}
+        <div className="p-8 min-h-[220px] flex flex-col items-center justify-center gap-5">
+          {phase.kind === "loading" && (() => {
+            const total = Math.max(phase.steps.length, 1);
+            const pct = Math.round(((phase.stepIdx + 1) / total) * 100);
+            return (
+              <>
+                <p className="text-white/70 text-sm font-medium tracking-wide">Uploading your bot…</p>
+                <div className="w-full max-w-sm h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${pct}%`, background: "linear-gradient(90deg, rgba(168,130,255,0.9), rgba(120,190,255,0.9))" }}
+                  />
+                </div>
+                <p className="text-white/35 text-xs font-mono">{pct}%</p>
+              </>
+            );
+          })()}
           {phase.kind === "success" && (
             <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
               <div className="text-5xl mb-2 text-green-400" style={{ filter: "drop-shadow(0 0 20px rgba(74,222,128,0.7))" }}>✓</div>
