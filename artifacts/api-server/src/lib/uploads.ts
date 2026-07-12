@@ -21,5 +21,5 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 75 * 1024 * 1024 }, // keep in sync with the JSON body limit in app.ts
 });
